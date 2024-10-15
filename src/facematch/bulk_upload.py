@@ -1,6 +1,5 @@
 import os 
 import csv
-import json 
 
 def upload_embedding_to_database(data, database_filepath):
     csv_file = database_filepath
