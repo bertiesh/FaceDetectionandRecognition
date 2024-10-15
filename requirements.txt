@@ -3,3 +3,5 @@ tf-keras
 ultralytics
 black
 isort
+pandas
+scikit-learn
