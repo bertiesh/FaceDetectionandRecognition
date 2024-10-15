@@ -1,0 +1,5 @@
+{
+  "model_name": "ArcFace",
+  "detector_backend": "yolov8",
+  "threshold": 0.68
+}
