@@ -1,30 +1,34 @@
 import os
 import unittest
 from unittest.mock import patch
+
 from src.facematch.bulk_upload import upload_embedding_to_database
 
+
 class TestUploadEmbeddingToDatabase(unittest.TestCase):
-    @patch('builtins.open', new_callable=unittest.mock.mock_open)
+    @patch("builtins.open", new_callable=unittest.mock.mock_open)
     def test_upload_embedding_to_database(self, mock_open):
 
         # Sample data for testing
         data = [
             {"name": "Alice", "age": 30, "city": "New York"},
-            {"name": "Bob", "age": 25, "city": "San Francisco"}
+            {"name": "Bob", "age": 25, "city": "San Francisco"},
         ]
 
         # Call the function to test
         upload_embedding_to_database(data, "data/test_embeddings.csv")
 
         # Assert that open was called with the correct file path and mode
-        mock_open.assert_called_once_with("data/test_embeddings.csv", mode='w', newline='')
+        mock_open.assert_called_once_with(
+            "data/test_embeddings.csv", mode="w", newline=""
+        )
 
         # Get the handle to the mock file
         handle = mock_open()
 
         # Get the written content
         written_content = handle.write.call_args_list
-        
+
         # Extracting the arguments to verify content written
         written_lines = [args[0][0] for args in written_content]
 
@@ -36,7 +40,7 @@ class TestUploadEmbeddingToDatabase(unittest.TestCase):
     def test_directory_creation(self):
         # Test to ensure the directory is created
         csv_file = "data/test_embeddings.csv"
-        
+
         # Remove the directory if it exists for the test
         if os.path.exists(csv_file):
             os.remove(csv_file)
@@ -52,5 +56,6 @@ class TestUploadEmbeddingToDatabase(unittest.TestCase):
         if os.path.exists(csv_file):
             os.remove(csv_file)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
