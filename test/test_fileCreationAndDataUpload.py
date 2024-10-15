@@ -14,10 +14,10 @@ class TestUploadEmbeddingToDatabase(unittest.TestCase):
         ]
 
         # Call the function to test
-        upload_embedding_to_database(data)
+        upload_embedding_to_database(data, "data/test_embeddings.csv")
 
         # Assert that open was called with the correct file path and mode
-        mock_open.assert_called_once_with("data/embeddings.csv", mode='w', newline='')
+        mock_open.assert_called_once_with("data/test_embeddings.csv", mode='w', newline='')
 
         # Get the handle to the mock file
         handle = mock_open()
@@ -33,6 +33,24 @@ class TestUploadEmbeddingToDatabase(unittest.TestCase):
         self.assertIn("Alice,30,New York\r\n", written_lines)
         self.assertIn("Bob,25,San Francisco\r\n", written_lines)
 
+    def test_directory_creation(self):
+        # Test to ensure the directory is created
+        csv_file = "data/test_embeddings.csv"
+        
+        # Remove the directory if it exists for the test
+        if os.path.exists(csv_file):
+            os.remove(csv_file)
+
+        # Call the function
+        data = [{"name": "Test", "age": 0, "city": "Test City"}]
+        upload_embedding_to_database(data, csv_file)
+
+        # Assert that the directory now exists
+        self.assertTrue(os.path.exists(csv_file))
+
+        # Cleanup
+        if os.path.exists(csv_file):
+            os.remove(csv_file)
 
 if __name__ == '__main__':
     unittest.main()
