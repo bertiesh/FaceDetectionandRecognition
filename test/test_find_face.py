@@ -2,19 +2,15 @@ import os
 import unittest
 
 from src.facematch.interface import FaceMatchModel
+from src.facematch.resource_path import get_resource_path
 
 
 class TestMatchFace(unittest.TestCase):
 
     def setUp(self):
-        current_dir = os.path.dirname(__file__)
-        self.image_directory_path = os.path.join(
-            current_dir, "..", "resources", "sample_images"
-        )
-        self.database_path = os.path.join(current_dir, "..", "resources", "test_db.csv")
-        self.image_file_path = os.path.join(
-            current_dir, "..", "resources", "test_image.jpg"
-        )
+        self.image_directory_path = get_resource_path("sample_images")
+        self.database_path = get_resource_path("test_db.csv")
+        self.image_file_path = get_resource_path("test_image.jpg")
 
     def test_match_face_success(self):
         face_match_object = FaceMatchModel()

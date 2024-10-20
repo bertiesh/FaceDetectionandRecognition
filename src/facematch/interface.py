@@ -3,6 +3,7 @@ import os
 
 from src.facematch.database_functions import upload_embedding_to_database
 from src.facematch.face_representation import detect_faces_and_get_embeddings
+from src.facematch.resource_path import get_resource_path
 from src.facematch.similarity_search import cosine_similarity_search
 
 
@@ -11,13 +12,10 @@ class FaceMatchModel:
     def bulk_upload(self, image_directory_path, database_path=None):
         try:
             if database_path is None:
-                current_dir = os.path.dirname(__file__)
-                config_path = os.path.join(
-                    current_dir, "../..", "resources", "db_config.json"
-                )
+                config_path = get_resource_path("db_config.json")
                 with open(config_path, "r") as config_file:
                     config = json.load(config_file)
-                database_path = config["database_path"]
+                database_path = get_resource_path(config["database_path"])
 
             embedding_outputs = []
             for filename in os.listdir(image_directory_path):
@@ -37,13 +35,10 @@ class FaceMatchModel:
     def find_face(self, image_file_path, database_path=None):
         try:
             if database_path is None:
-                current_dir = os.path.dirname(__file__)
-                config_path = os.path.join(
-                    current_dir, "../..", "resources", "db_config.json"
-                )
+                config_path = get_resource_path("db_config.json")
                 with open(config_path, "r") as config_file:
                     config = json.load(config_file)
-                database_path = config["database_path"]
+                database_path = get_resource_path(config["database_path"])
             filename = os.path.basename(image_file_path)
             if filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp")):
                 embedding_outputs = detect_faces_and_get_embeddings(image_file_path)
