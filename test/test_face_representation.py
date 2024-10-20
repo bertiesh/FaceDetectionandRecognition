@@ -13,7 +13,7 @@ class TestApp(unittest.TestCase):
         )
         result = face_representation.detect_faces_and_get_embeddings(image_path)
         assert len(result[0]["embedding"]) == 512
-        assert result[0]["region"] == (222, 200, 90, 120)
+        assert result[0]["bbox"] == [222, 200, 90, 120]
 
 
 if __name__ == "__main__":

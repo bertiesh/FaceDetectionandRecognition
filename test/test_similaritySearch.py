@@ -9,18 +9,22 @@ from src.facematch.similarity_search import cosine_similarity_search
 class TestCosineSimilarity(unittest.TestCase):
     def setUp(self):
         # Create a temporary CSV file for testing
-        self.csv_file = "data/test_embeddings.csv"
-        test_data = {
-            "img_path": [
-                "path/to/image1.jpg",
-                "path/to/image2.jpg",
-                "path/to/image3.jpg",
-            ],
-            "Embeddings": [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
-        }
+        self.csv_file = "test/data/test_embeddings.csv"
+        test_data = [
+            {
+                "image_path": "test/data/img1.png",
+                "embedding": [1, 2, 3],
+                "bbox": (1, 2, 300, 200),
+            },
+            {
+                "image_path": "test/data/img2.png",
+                "embedding": [4, 2, 3],
+                "bbox": (5, 2, 300, 200),
+            },
+        ]
         # Convert Embeddings to lists to store in CSV
         df = pd.DataFrame(test_data)
-        df["Embeddings"] = df["Embeddings"].apply(lambda x: ",".join(map(str, x)))
+        df["embedding"] = df["embedding"].apply(lambda x: ",".join(map(str, x)))
         df.to_csv(self.csv_file, index=False)
 
         # Example query vector
@@ -34,7 +38,7 @@ class TestCosineSimilarity(unittest.TestCase):
 
         # Assert that the top 2 image paths are returned
         self.assertEqual(len(top_img_paths), 2)
-        self.assertIn("path/to/image1.jpg", top_img_paths)
+        self.assertIn("test/data/img1.png", top_img_paths)
 
     def test_cosine_similarity_threshold(self):
         # Test with threshold parameter
@@ -44,7 +48,7 @@ class TestCosineSimilarity(unittest.TestCase):
 
         # Assert that the correct image paths are returned based on the threshold
         self.assertTrue(len(top_img_paths) >= 1)
-        self.assertIn("path/to/image1.jpg", top_img_paths)
+        self.assertIn("test/data/img1.png", top_img_paths)
 
     def test_invalid_parameters(self):
         # Test with no top_n or threshold provided
