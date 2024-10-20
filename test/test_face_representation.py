@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from src import face_representation
+from src.facematch.face_representation import detect_faces_and_get_embeddings
 
 
 class TestApp(unittest.TestCase):
@@ -11,7 +11,7 @@ class TestApp(unittest.TestCase):
         image_path = os.path.join(
             current_dir, "..", "resources", "sample_images/single.jpg"
         )
-        result = face_representation.detect_faces_and_get_embeddings(image_path)
+        result = detect_faces_and_get_embeddings(image_path)
         assert len(result[0]["embedding"]) == 512
         assert result[0]["bbox"] == [222, 200, 90, 120]
 
