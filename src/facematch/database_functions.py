@@ -10,4 +10,8 @@ def upload_embedding_to_database(data, database_filepath):
     df = pd.DataFrame(data)
     df["embedding"] = df["embedding"].apply(lambda x: ",".join(map(str, x)))
     df["bbox"] = df["bbox"].apply(lambda x: ",".join(map(str, x)))
-    df.to_csv(csv_file, index=False)
+
+    if os.path.exists(csv_file):
+        df.to_csv(csv_file, mode="a", index=False, header=False)
+    else:
+        df.to_csv(csv_file, index=False)
