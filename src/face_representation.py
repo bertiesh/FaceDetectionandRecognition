@@ -33,7 +33,11 @@ def detect_faces_and_get_embeddings(image_path):
         )
 
         face_embeddings.append(
-            {"embedding": embedding, "region": (x, y, width, height)}
+            {
+                "image_path": image_path,
+                "embedding": embedding,
+                "bbox": [x, y, width, height],
+            }
         )
 
     return face_embeddings
