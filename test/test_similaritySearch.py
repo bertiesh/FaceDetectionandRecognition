@@ -11,8 +11,16 @@ class TestCosineSimilarity(unittest.TestCase):
         # Create a temporary CSV file for testing
         self.csv_file = "test/data/test_embeddings.csv"
         test_data = [
-            {"image_path": "test/data/img1.png", "embedding": [1,2,3], "bbox": (1,2,300,200)},
-            {"image_path": "test/data/img2.png", "embedding": [4,2,3], "bbox": (5,2,300,200)},
+            {
+                "image_path": "test/data/img1.png",
+                "embedding": [1, 2, 3],
+                "bbox": (1, 2, 300, 200),
+            },
+            {
+                "image_path": "test/data/img2.png",
+                "embedding": [4, 2, 3],
+                "bbox": (5, 2, 300, 200),
+            },
         ]
         # Convert Embeddings to lists to store in CSV
         df = pd.DataFrame(test_data)
