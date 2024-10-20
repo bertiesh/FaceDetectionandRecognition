@@ -13,10 +13,10 @@ def cosine_similarity_search(
 
     # Read the CSV file into a DataFrame and Embeddings stored as str to lists
     df = pd.read_csv(csv_file)
-    df["Embeddings"] = df["Embeddings"].apply(lambda x: list(map(float, x.split(","))))
+    df["embedding"] = df["embedding"].apply(lambda x: list(map(float, x.split(","))))
 
     # Compute cosine similarity between the query vector and each vector in the 'embedding' column
-    df["similarity"] = df["Embeddings"].apply(
+    df["similarity"] = df["embedding"].apply(
         lambda x: cosine_similarity([x], [query_vector])[0][0]
     )
 
@@ -28,6 +28,6 @@ def cosine_similarity_search(
         results = df.nlargest(top_n, "similarity")
 
     # Return the image paths corresponding to the top N similar vectors or vectors with similarity higher than threshold
-    top_img_paths = results["img_path"].to_list()
+    top_img_paths = results["image_path"].to_list()
 
     return top_img_paths
