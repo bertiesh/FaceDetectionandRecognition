@@ -3,7 +3,7 @@ import unittest
 
 import pandas as pd
 
-from src.facematch.bulk_upload import upload_embedding_to_database
+from src.facematch.database_functions import upload_embedding_to_database
 from src.facematch.similarity_search import (cosine_similarity_search,
                                              cosine_similarity_search_faiss)
 
