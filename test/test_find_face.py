@@ -11,6 +11,7 @@ class TestMatchFace(unittest.TestCase):
         self.image_directory_path = get_resource_path("sample_images")
         self.database_path = get_resource_path("test_db.csv")
         self.image_file_path = get_resource_path("test_image.jpg")
+        self.faiss_database_path = get_resource_path("test_db.bin")
 
     def test_match_face_success(self):
         face_match_object = FaceMatchModel()
@@ -24,6 +25,9 @@ class TestMatchFace(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(self.database_path):
             os.remove(self.database_path)
+
+        if os.path.exists(self.faiss_database_path):
+            os.remove(self.faiss_database_path)
 
 
 if __name__ == "__main__":

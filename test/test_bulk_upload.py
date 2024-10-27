@@ -10,6 +10,7 @@ class TestBulkUpload(unittest.TestCase):
     def setUp(self):
         self.image_directory_path = get_resource_path("sample_images")
         self.database_path = get_resource_path("test_db.csv")
+        self.faiss_database_path = get_resource_path("test_db.bin")
 
     def test_bulk_upload_success(self):
         face_match_object = FaceMatchModel()
@@ -21,6 +22,9 @@ class TestBulkUpload(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(self.database_path):
             os.remove(self.database_path)
+
+        if os.path.exists(self.faiss_database_path):
+            os.remove(self.faiss_database_path)
 
 
 if __name__ == "__main__":
