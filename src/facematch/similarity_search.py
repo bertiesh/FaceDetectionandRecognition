@@ -65,3 +65,35 @@ def cosine_similarity_search_faiss(
     top_img_paths = [df["image_path"].iloc[i - 1] for i in indices if i != -1]
 
     return top_img_paths
+
+def euclidean_distance_search_faiss(query_vector, database_filepath, top_n=None, threshold=None
+):
+    # Ensure at least one of top_n or threshold is set
+    if top_n is None and threshold is None:
+        raise ValueError("Either top_n or threshold must be specified.")
+
+    # Normalize the query vector
+    query_vector = np.array(query_vector).reshape(1, -1).astype("float32")
+
+    faiss_path = database_filepath.replace(".csv", ".bin")
+
+    # Load the faiss index
+    index = faiss.read_index(faiss_path)
+
+    if top_n:
+        distances, indices = index.search(query_vector, top_n)
+        indices = indices[0][indices[0]!=-1]
+    else:
+        # Perform a Range Search
+        radius = threshold  # adjust this value to control the search radius
+        lims, distances, indices = index.range_search(query_vector, radius)
+
+        start = lims[0]
+        end = lims[1]
+        indices = indices[start:end]
+
+    df = pd.read_csv(database_filepath)
+
+    top_img_paths = [df["image_path"].iloc[i] for i in indices]
+
+    return top_img_paths
