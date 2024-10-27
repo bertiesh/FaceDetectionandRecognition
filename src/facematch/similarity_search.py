@@ -66,7 +66,9 @@ def cosine_similarity_search_faiss(
 
     return top_img_paths
 
-def euclidean_distance_search_faiss(query_vector, database_filepath, top_n=None, threshold=None
+
+def euclidean_distance_search_faiss(
+    query_vector, database_filepath, top_n=None, threshold=None
 ):
     # Ensure at least one of top_n or threshold is set
     if top_n is None and threshold is None:
@@ -82,7 +84,7 @@ def euclidean_distance_search_faiss(query_vector, database_filepath, top_n=None,
 
     if top_n:
         distances, indices = index.search(query_vector, top_n)
-        indices = indices[0][indices[0]!=-1]
+        indices = indices[0][indices[0] != -1]
     else:
         # Perform a Range Search
         radius = threshold  # adjust this value to control the search radius
