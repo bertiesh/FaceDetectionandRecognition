@@ -13,7 +13,7 @@ def add_embeddings_faiss_index(embeddings, database_filepath):
     if not os.path.exists(faiss_path):
         os.makedirs(os.path.dirname(faiss_path), exist_ok=True)
         # Create faiss index
-        index = faiss.IndexFlatIP(embeddings.shape[1])
+        index = faiss.IndexFlatL2(embeddings.shape[1])
     else:
         # Load the faiss index
         index = faiss.read_index(faiss_path)
