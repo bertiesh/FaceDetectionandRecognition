@@ -29,23 +29,33 @@ class FaceMatchModel:
             # Call helper functions for each image file.
             total_files_uploaded = 0
             embedding_outputs = []
-            for filename in os.listdir(image_directory_path):
-                image_path = os.path.join(image_directory_path, filename)
-                if filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp")):
-                    status, value = detect_faces_and_get_embeddings(image_path, model_name, detector_backend)
-                    if status:
-                        total_files_uploaded += 1
-                        embedding_outputs.extend(value)
-                        logger.log_info("Successfully uploaded file " + str(total_files_uploaded) + " to database")
+            for root, dirs, files in os.walk(image_directory_path):
+                for filename in files:
+                    image_path = os.path.join(root, filename)
+                    if filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp")):
+                        status, value = detect_faces_and_get_embeddings(image_path, model_name, detector_backend)
+                        if status:
+                            total_files_uploaded += 1
+                            embedding_outputs.extend(value)
 
-            upload_embedding_to_database(embedding_outputs, database_path)
+                    if total_files_uploaded % 100 == 0:
+                        logger.log_info("Successfully converted file " + str(total_files_uploaded) + " to "
+                                                                                                     "embeddings")
+                    if total_files_uploaded % 1000 == 0:
+                        upload_embedding_to_database(embedding_outputs, database_path)
+                        embedding_outputs = []
+                        logger.log_info("Successfully uploaded " + str(total_files_uploaded) + " files to database")
+
+            if len(embedding_outputs) != 0:
+                upload_embedding_to_database(embedding_outputs, database_path)
+                logger.log_info("Successfully uploaded " + str(total_files_uploaded) + " files to database")
 
             return "Successfully uploaded " + str(total_files_uploaded) + " files to database"
         except Exception as e:
             return f"An error occurred: {str(e)}"
 
     # Function that takes in path to image and returns all images that have the same person.
-    def find_face(self, image_file_path, database_path=None, toggle_faiss=True):
+    def find_face(self, image_file_path, database_path=None, toggle_faiss=False):
         try:
             # Get database from config file.
             if database_path is None:

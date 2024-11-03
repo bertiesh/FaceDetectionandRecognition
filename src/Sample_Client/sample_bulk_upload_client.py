@@ -32,5 +32,5 @@ inputs = {
 }
 
 response = client.request(inputs, parameters)
-print("Find Face model response")
+print("Bulk Upload model response")
 print(response, "\n")
