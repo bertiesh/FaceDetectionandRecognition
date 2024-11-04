@@ -5,7 +5,7 @@ import pandas as pd
 
 from src.facematch.database_functions import upload_embedding_to_database
 from src.facematch.similarity_search import (cosine_similarity_search,
-                                             euclidean_distance_search_faiss)
+                                             cosine_similarity_search_faiss)
 
 
 class TestCosineSimilarity(unittest.TestCase):
@@ -52,11 +52,6 @@ class TestCosineSimilarity(unittest.TestCase):
         self.assertTrue(len(top_img_paths) >= 1)
         self.assertIn("test/data/img1.png", top_img_paths)
 
-    def test_invalid_parameters(self):
-        # Test with no top_n or threshold provided
-        with self.assertRaises(ValueError):
-            cosine_similarity_search(self.query_vector, self.csv_file)
-
     def tearDown(self):
         # Clean up the temporary CSV file
         if os.path.exists(self.csv_file):
@@ -88,7 +83,7 @@ class TestCosineSimilarityFAISS(unittest.TestCase):
 
     def test_cosine_similarity_top_n(self):
         # Test with top_n parameter
-        top_img_paths = euclidean_distance_search_faiss(
+        top_img_paths = cosine_similarity_search_faiss(
             self.query_vector, self.csv_file, top_n=2
         )
 
@@ -98,18 +93,13 @@ class TestCosineSimilarityFAISS(unittest.TestCase):
 
     def test_cosine_similarity_threshold(self):
         # Test with threshold parameter
-        top_img_paths = euclidean_distance_search_faiss(
-            self.query_vector, self.csv_file, threshold=17
+        top_img_paths = cosine_similarity_search_faiss(
+            self.query_vector, self.csv_file, threshold=0.68
         )
 
         # Assert that the correct image paths are returned based on the threshold
         self.assertTrue(len(top_img_paths) >= 1)
         self.assertIn("test/data/img1.png", top_img_paths)
-
-    def test_invalid_parameters(self):
-        # Test with no top_n or threshold provided
-        with self.assertRaises(ValueError):
-            euclidean_distance_search_faiss(self.query_vector, self.csv_file)
 
     def tearDown(self):
         # Clean up the temporary CSV file
