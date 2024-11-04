@@ -10,3 +10,10 @@ __pycache__/
 venv/
 .env/
 .idea/
+
+# Ignore data folders
+resources/data/
+resources/test_images/
+run_server.sh
+run_server2.sh
+
