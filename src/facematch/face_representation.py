@@ -1,8 +1,4 @@
-import json
-
 from deepface import DeepFace
-
-from src.facematch.resource_path import get_resource_path
 
 
 # Function that takes in path to image and returns a status field and a list of face embeddings and corresponding
@@ -37,4 +33,4 @@ def detect_faces_and_get_embeddings(image_path, model_name, detector_backend):
 
         return True, face_embeddings
     except Exception as e:
-        return False, []
+        return False, [e]
