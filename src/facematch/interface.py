@@ -6,7 +6,7 @@ from src.facematch.face_representation import detect_faces_and_get_embeddings
 from src.facematch.logger import log_info
 from src.facematch.resource_path import get_resource_path
 from src.facematch.similarity_search import (cosine_similarity_search,
-                                             euclidean_distance_search_faiss)
+                                             cosine_similarity_search_faiss)
 
 
 class FaceMatchModel:
@@ -103,10 +103,10 @@ class FaceMatchModel:
                 if status:
                     for embedding_output in embedding_outputs:
                         if toggle_faiss:
-                            output = euclidean_distance_search_faiss(
+                            output = cosine_similarity_search_faiss(
                                 embedding_output["embedding"],
                                 database_path,
-                                threshold=17,
+                                threshold=threshold,
                             )
                         else:
                             output = cosine_similarity_search(
