@@ -1,6 +1,7 @@
 import os
 
 import faiss
+import numpy as np
 
 
 def add_embeddings_faiss_index(embeddings, database_filepath):
@@ -9,6 +10,10 @@ def add_embeddings_faiss_index(embeddings, database_filepath):
     """
     # Create a new path with the ".bin" extension
     faiss_path = database_filepath.replace(".csv", ".bin")
+
+    # Normalize the embeddings
+    embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
+    embeddings = embeddings.astype("float32")
 
     if not os.path.exists(faiss_path):
         os.makedirs(os.path.dirname(faiss_path), exist_ok=True)
