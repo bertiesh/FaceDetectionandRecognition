@@ -26,6 +26,7 @@ class FaceMatchModel:
                 config = json.load(config_file)
             model_name = config["model_name"]
             detector_backend = config["detector_backend"]
+            face_confidence_threshold = config["face_confidence_threshold"]
 
             # Call helper functions for each image file.
             total_files_uploaded = 0
@@ -37,7 +38,10 @@ class FaceMatchModel:
                         (".png", ".jpg", ".jpeg", ".gif", ".bmp")
                     ):
                         status, value = detect_faces_and_get_embeddings(
-                            image_path, model_name, detector_backend
+                            image_path,
+                            model_name,
+                            detector_backend,
+                            face_confidence_threshold,
                         )
                         if status:
                             total_files_uploaded += 1
@@ -92,12 +96,16 @@ class FaceMatchModel:
             model_name = config["model_name"]
             detector_backend = config["detector_backend"]
             threshold = config["cosine-threshold"]
+            face_confidence_threshold = config["face_confidence_threshold"]
 
             # Call helper functions to get similar images.
             filename = os.path.basename(image_file_path)
             if filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp")):
                 status, embedding_outputs = detect_faces_and_get_embeddings(
-                    image_file_path, model_name, detector_backend
+                    image_file_path,
+                    model_name,
+                    detector_backend,
+                    face_confidence_threshold,
                 )
                 matching_image_paths = []
                 if status:
