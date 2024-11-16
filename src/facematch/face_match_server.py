@@ -1,3 +1,5 @@
+import os
+
 from typing import List, TypedDict
 
 from flask_ml.flask_ml_server import MLServer, load_file_as_string
@@ -12,11 +14,15 @@ from src.facematch.logger import log_info
 
 server = MLServer(__name__)
 
+# Add static location for app-info.md file
+script_dir = os.path.dirname(os.path.abspath(__file__))
+info_file_path = os.path.join(script_dir, "..", "app-info.md")
+
 server.add_app_metadata(
     name="Face Recognition and Matching",
     author="FaceMatch Team",
     version="0.1.0",
-    info=load_file_as_string("../app-info.md"),
+    info=load_file_as_string(info_file_path),
 )
 
 
