@@ -16,7 +16,7 @@ server.add_app_metadata(
     name="Face Recognition and Matching",
     author="FaceMatch Team",
     version="0.1.0",
-    info=load_file_as_string("src/app-info.md"),
+    info=load_file_as_string("../app-info.md"),
 )
 
 

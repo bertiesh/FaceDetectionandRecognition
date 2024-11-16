@@ -24,5 +24,9 @@ inputs = {
 }
 
 response = client.request(inputs, parameters)
-print("Find Face model response")
-print(response, "\n")
+answer = ""
+
+# Return all similar images as space separated file_names
+for file in response["files"]:
+    answer += file["path"].split("\\")[-1] + " "
+print(answer, "\n")
