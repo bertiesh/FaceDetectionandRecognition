@@ -3,8 +3,9 @@ from typing import List, TypedDict
 from flask_ml.flask_ml_server import MLServer, load_file_as_string
 from flask_ml.flask_ml_server.models import (BatchDirectoryInput,
                                              BatchFileInput, BatchFileResponse,
-                                             FileResponse, ResponseBody,
-                                             TextResponse, EnumVal, TaskSchema, InputSchema, InputType, ParameterSchema, EnumParameterDescriptor, TextParameterDescriptor)
+                                             FileResponse, InputSchema,
+                                             InputType, ResponseBody,
+                                             TaskSchema, TextResponse)
 
 from src.facematch.interface import FaceMatchModel
 from src.facematch.logger import log_info
@@ -21,7 +22,7 @@ server.add_app_metadata(
 
 available_databases: List[str] = []
 
-   
+
 def get_ingest_query_image_task_schema() -> TaskSchema:
     return TaskSchema(
         inputs=[
@@ -31,13 +32,13 @@ def get_ingest_query_image_task_schema() -> TaskSchema:
                 input_type=InputType.BATCHFILE,
             )
         ],
-        parameters=[
-        ],
+        parameters=[],
     )
 
 
 # create an instance of the model
 face_match_model = FaceMatchModel()
+
 
 class FindFaceInputs(TypedDict):
     image_paths: BatchFileInput
@@ -45,14 +46,22 @@ class FindFaceInputs(TypedDict):
 
 class FindFaceParameters(TypedDict): ...
 
-@server.route("/findface", order=1, short_title="Find Matching Faces",task_schema_func=get_ingest_query_image_task_schema)
+
+@server.route(
+    "/findface",
+    order=1,
+    short_title="Find Matching Faces",
+    task_schema_func=get_ingest_query_image_task_schema,
+)
 def find_face_endpoint(
     inputs: FindFaceInputs, parameters: FindFaceParameters
 ) -> ResponseBody:
     input_file_paths = [item.path for item in inputs["image_paths"].files]
     results = face_match_model.find_face(input_file_paths[0])
     log_info(results)
-    image_results = [FileResponse(file_type="img", path=res, title=res) for res in results]
+    image_results = [
+        FileResponse(file_type="img", path=res, title=res) for res in results
+    ]
 
     return ResponseBody(root=BatchFileResponse(files=image_results))
 
@@ -66,9 +75,9 @@ def get_ingest_images_task_schema() -> TaskSchema:
                 input_type=InputType.BATCHDIRECTORY,
             )
         ],
-        parameters=[
-        ],
+        parameters=[],
     )
+
 
 class BulkUploadInputs(TypedDict):
     directory_paths: BatchDirectoryInput
@@ -77,7 +86,12 @@ class BulkUploadInputs(TypedDict):
 class BulkUploadParameters(TypedDict): ...
 
 
-@server.route("/bulkupload", order=0, short_title="Upload Images to Database",task_schema_func=get_ingest_images_task_schema)
+@server.route(
+    "/bulkupload",
+    order=0,
+    short_title="Upload Images to Database",
+    task_schema_func=get_ingest_images_task_schema,
+)
 def bulk_upload_endpoint(
     inputs: BulkUploadInputs, parameters: BulkUploadParameters
 ) -> ResponseBody:
