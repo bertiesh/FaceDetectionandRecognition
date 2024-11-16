@@ -27,7 +27,7 @@ def get_ingest_query_image_task_schema() -> TaskSchema:
         inputs=[
             InputSchema(
                 key="image_paths",
-                label="Image Paths",
+                label="Image Path",
                 input_type=InputType.BATCHFILE,
             )
         ],
@@ -62,7 +62,7 @@ def get_ingest_images_task_schema() -> TaskSchema:
         inputs=[
             InputSchema(
                 key="directory_paths",
-                label="Image Directories",
+                label="Image Directory",
                 input_type=InputType.BATCHDIRECTORY,
             )
         ],

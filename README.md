@@ -42,8 +42,50 @@ conda activate facematch-env
 ```
 pip install -r requirements.txt
 ```
+# Usage
 
-### Run unit tests
+## CLI
+
+### Start the server
+```
+python -m src.facematch.face_match_server
+```
+
+### Task 1: Upload images to database
+```
+python -m src.Sample_Client.sample_bulk_upload_client <path_to_directory_of_images>
+
+Run with Sample images:
+python -m src.Sample_Client.sample_bulk_upload_client resources/sample_images
+```
+
+### Task 2: Find matching faces
+```
+python -m src.Sample_Client.sample_find_face_client <path_to_image>
+
+Run with Sample image:
+python -m src.Sample_Client.sample_find_face_client resources/test_image.jpg
+```
+
+## Rescue-Box frontend
+
+### Start the server
+```
+python -m src.facematch.face_match_server
+```
+
+### Use Rescue-Box-Desktop
+
+- Install Rescue-Box from [link](https://github.com/UMass-Rescue/RescueBox-Desktop)
+
+- Open Rescue-Box-Desktop and resgiter the model by adding the server IP address and port number in which the server is running.
+
+- Choose the model from list of available models under the **MODELS** tab.
+
+- Checkout the Inspect page to learn more about using the model.
+
+# For Developers
+## Run unit tests
 
 ```
 python -m unittest discover test
