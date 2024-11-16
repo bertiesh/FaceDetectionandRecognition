@@ -2,5 +2,6 @@
   "model_name": "ArcFace",
   "detector_backend": "yolov8",
   "euclidian-threshold": 17,
-  "cosine-threshold": 0.32
+  "cosine-threshold": 0.32,
+  "face_confidence_threshold": 0.7
 }
