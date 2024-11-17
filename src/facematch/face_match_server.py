@@ -1,13 +1,15 @@
 import os
-
 from typing import List, TypedDict
 
 from flask_ml.flask_ml_server import MLServer, load_file_as_string
 from flask_ml.flask_ml_server.models import (BatchDirectoryInput,
                                              BatchFileInput, BatchFileResponse,
+                                             EnumParameterDescriptor, EnumVal,
                                              FileResponse, InputSchema,
-                                             InputType, ResponseBody,
-                                             TaskSchema, TextResponse)
+                                             InputType, ParameterSchema,
+                                             ResponseBody, TaskSchema,
+                                             TextParameterDescriptor,
+                                             TextResponse)
 
 from src.facematch.interface import FaceMatchModel
 from src.facematch.logger import log_info
@@ -26,7 +28,7 @@ server.add_app_metadata(
 )
 
 
-available_databases: List[str] = []
+available_databases: List[str] = ["Create a new database"]
 
 
 def get_ingest_query_image_task_schema() -> TaskSchema:
@@ -38,7 +40,22 @@ def get_ingest_query_image_task_schema() -> TaskSchema:
                 input_type=InputType.BATCHFILE,
             )
         ],
-        parameters=[],
+        parameters=[
+            ParameterSchema(
+                key="database_path",
+                label="Database Path",
+                value=EnumParameterDescriptor(
+                    enum_vals=[
+                        EnumVal(key=database_name, label=database_name)
+                        for database_name in available_databases[1:]
+                    ],
+                    message_when_empty="No databases found",
+                    default=(
+                        available_databases[0] if len(available_databases) > 0 else ""
+                    ),
+                ),
+            ),
+        ],
     )
 
 
@@ -50,7 +67,8 @@ class FindFaceInputs(TypedDict):
     image_paths: BatchFileInput
 
 
-class FindFaceParameters(TypedDict): ...
+class FindFaceParameters(TypedDict):
+    database_path: str
 
 
 @server.route(
@@ -63,7 +81,9 @@ def find_face_endpoint(
     inputs: FindFaceInputs, parameters: FindFaceParameters
 ) -> ResponseBody:
     input_file_paths = [item.path for item in inputs["image_paths"].files]
-    results = face_match_model.find_face(input_file_paths[0])
+    results = face_match_model.find_face(
+        input_file_paths[0], parameters["database_path"]
+    )
     log_info(results)
     image_results = [
         FileResponse(file_type="img", path=res, title=res) for res in results
@@ -81,7 +101,27 @@ def get_ingest_images_task_schema() -> TaskSchema:
                 input_type=InputType.BATCHDIRECTORY,
             )
         ],
-        parameters=[],
+        parameters=[
+            ParameterSchema(
+                key="database_path",
+                label="Database Path",
+                value=TextParameterDescriptor(default="data/database.csv"),
+            ),
+            ParameterSchema(
+                key="dropdown_database_path",
+                label="Database Path",
+                value=EnumParameterDescriptor(
+                    enum_vals=[
+                        EnumVal(key=database_name, label=database_name)
+                        for database_name in available_databases
+                    ],
+                    message_when_empty="No databases found",
+                    default=(
+                        available_databases[0] if len(available_databases) > 0 else ""
+                    ),
+                ),
+            ),
+        ],
     )
 
 
@@ -89,7 +129,9 @@ class BulkUploadInputs(TypedDict):
     directory_paths: BatchDirectoryInput
 
 
-class BulkUploadParameters(TypedDict): ...
+class BulkUploadParameters(TypedDict):
+    database_path: str
+    dropdown_database_path: str
 
 
 @server.route(
@@ -101,11 +143,17 @@ class BulkUploadParameters(TypedDict): ...
 def bulk_upload_endpoint(
     inputs: BulkUploadInputs, parameters: BulkUploadParameters
 ) -> ResponseBody:
+    if parameters["dropdown_database_path"] == "Create a new database":
+        available_databases.append(parameters["database_path"])
+    else:
+        parameters["database_path"] = parameters["dropdown_database_path"]
     input_directory_paths = [
         item.path for item in inputs["directory_paths"].directories
     ]
     log_info(input_directory_paths[0])
-    response = face_match_model.bulk_upload(input_directory_paths[0])
+    response = face_match_model.bulk_upload(
+        input_directory_paths[0], parameters["database_path"]
+    )
 
     return ResponseBody(root=TextResponse(value=response))
 

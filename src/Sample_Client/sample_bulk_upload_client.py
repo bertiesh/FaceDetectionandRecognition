@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from flask_ml.flask_ml_client import MLClient
 from flask_ml.flask_ml_server.models import BatchDirectoryInput, Input
@@ -10,15 +11,28 @@ client = MLClient(BULK_UPLOAD_MODEL_URL)
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="To parse text arguments")
 parser.add_argument(
-    "directory_paths",
+    "--directory_paths",
     metavar="file",
     type=str,
     nargs="+",
     help="Path to directory containing images",
 )
+
+parser.add_argument(
+    "--database_path", required=True, type=str, help="Path to the database file"
+)
+
 args = parser.parse_args()
 
-parameters = {}
+if os.path.exists(args.database_path):
+    dropdown_database_path = args.database_path
+else:
+    dropdown_database_path = "Create a new database"
+
+parameters = {
+    "database_path": args.database_path,
+    "dropdown_database_path": dropdown_database_path,
+}
 inputs = {
     "directory_paths": Input(
         root=BatchDirectoryInput.model_validate(
