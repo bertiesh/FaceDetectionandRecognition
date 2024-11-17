@@ -1,7 +1,10 @@
 import argparse
+import os
 
 from flask_ml.flask_ml_client import MLClient
 from flask_ml.flask_ml_server.models import BatchFileInput, Input
+
+from src.facematch.resource_path import get_resource_path
 
 # Define the URL and set up client
 IMAGE_MATCH_MODEL_URL = "http://127.0.0.1:5000/findface"
@@ -9,17 +12,27 @@ client = MLClient(IMAGE_MATCH_MODEL_URL)
 
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="To parse text arguments")
+
+# Absolute path of query image
 parser.add_argument(
     "--file_paths", metavar="file", type=str, nargs="+", help="Path to images"
 )
-
+# Name of database from user
 parser.add_argument(
-    "--database_path", required=True, type=str, help="Path to the database file"
+    "--database_name", required=True, type=str, help="Name of the database file"
 )
 
 args = parser.parse_args()
 
-parameters = {"database_path": args.database_path}
+# Check if database exists
+if not os.path.exists(
+    get_resource_path(os.path.join("data", args.database_name + ".csv"))
+):
+    print("Database does not exist")
+    exit()
+
+# Set parameters and inputs for the request
+parameters = {"database_name": args.database_name}
 inputs = {
     "image_paths": Input(
         root=BatchFileInput.model_validate(
@@ -28,10 +41,10 @@ inputs = {
     )
 }
 
+# Response from server
 response = client.request(inputs, parameters)
-answer = ""
 
-# Return all similar images as space separated file_names
+# Show results to user
+print("\nMatches found")
 for file in response["files"]:
-    answer += file["path"].split("\\")[-1] + " "
-print(answer, "\n")
+    print(file["path"].split("\\")[-1])
