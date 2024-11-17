@@ -1,9 +1,9 @@
 #!/bin/bash
 
-export PYTHONPATH=$(pwd)
+export PYTHONPATH=$(pwd)/..
 
 # Start the Python server in the background
-python src/facematch/face_match_server.py &
+python ../src/facematch/face_match_server.py &
 server_pid=$!
 echo "Server started with PID $server_pid"
 
@@ -14,7 +14,7 @@ sleep 10
 start_time=$(date +%s)
 
 # Run your functions or any additional Python commands here
-python src/Sample_Client/sample_find_face_client.py "\path\to\input\image"
+python ../src/Sample_Client/sample_bulk_upload_client.py "\path\to\image\directory"
 
 # Calculate total time taken
 end_time=$(date +%s)
