@@ -10,11 +10,16 @@ client = MLClient(IMAGE_MATCH_MODEL_URL)
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="To parse text arguments")
 parser.add_argument(
-    "file_paths", metavar="file", type=str, nargs="+", help="Path to images"
+    "--file_paths", metavar="file", type=str, nargs="+", help="Path to images"
 )
+
+parser.add_argument(
+    "--database_path", required=True, type=str, help="Path to the database file"
+)
+
 args = parser.parse_args()
 
-parameters = {}
+parameters = {"database_path": args.database_path}
 inputs = {
     "image_paths": Input(
         root=BatchFileInput.model_validate(
