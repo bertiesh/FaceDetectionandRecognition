@@ -19,7 +19,8 @@ class FaceMatchModel:
                 with open(config_path, "r") as config_file:
                     config = json.load(config_file)
                 database_path = get_resource_path(config["database_path"])
-
+            else:
+                database_path = get_resource_path(database_path)
             # Get models from config file.
             config_path = get_resource_path("model_config.json")
             with open(config_path, "r") as config_file:
@@ -88,7 +89,8 @@ class FaceMatchModel:
                 with open(config_path, "r") as config_file:
                     config = json.load(config_file)
                 database_path = get_resource_path(config["database_path"])
-
+            else:
+                database_path = get_resource_path(database_path)
             # Get models from config file.
             config_path = get_resource_path("model_config.json")
             with open(config_path, "r") as config_file:
