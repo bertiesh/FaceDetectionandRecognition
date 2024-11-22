@@ -99,17 +99,22 @@ def find_face_endpoint(
     )
 
     # Call model function to find matches
-    results = face_match_model.find_face(
+    status, results = face_match_model.find_face(
         input_file_paths[0], parameters["database_name"]
     )
+    log_info(status)
     log_info(results)
 
-    # Create response object
+    # Create response object of images if status is True
+    if not status:
+        return ResponseBody(root=TextResponse(value=results))
+
     image_results = [
         FileResponse(file_type="img", path=res, title=res) for res in results
     ]
 
     return ResponseBody(root=BatchFileResponse(files=image_results))
+
 
 
 # Frontend Task Schema defining inputs and paraneters that users can enter
@@ -166,7 +171,8 @@ class BulkUploadParameters(TypedDict):
 def bulk_upload_endpoint(
     inputs: BulkUploadInputs, parameters: BulkUploadParameters
 ) -> ResponseBody:
-    # If dropdown value chosen is Create a new database, then add database path to available databases, otherwise set database path to dropdown value
+    # If dropdown value chosen is Create a new database, then add database path to available databases, otherwise set
+    # database path to dropdown value
     if parameters["dropdown_database_name"] == "Create a new database":
         available_databases.append(parameters["database_name"])
     else:

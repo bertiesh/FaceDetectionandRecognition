@@ -21,6 +21,7 @@ class FaceMatchModel:
                 database_path = get_resource_path(config["database_path"])
             else:
                 database_path = get_resource_path(database_path)
+
             # Get models from config file.
             config_path = get_resource_path("model_config.json")
             with open(config_path, "r") as config_file:
@@ -29,7 +30,7 @@ class FaceMatchModel:
             detector_backend = config["detector_backend"]
             face_confidence_threshold = config["face_confidence_threshold"]
 
-            # Call helper functions for each image file.
+            # Call face_recognition function for each image file.
             total_files_uploaded = 0
             embedding_outputs = []
             for root, dirs, files in os.walk(image_directory_path):
@@ -38,6 +39,7 @@ class FaceMatchModel:
                     if filename.lower().endswith(
                         (".png", ".jpg", ".jpeg", ".gif", ".bmp")
                     ):
+                        # Get status and face_embeddings for the image
                         status, value = detect_faces_and_get_embeddings(
                             image_path,
                             model_name,
@@ -48,20 +50,24 @@ class FaceMatchModel:
                             total_files_uploaded += 1
                             embedding_outputs.extend(value)
 
-                    if total_files_uploaded % 100 == 0:
+                    # Log info for every 100 files that are successfully converted.
+                    if total_files_uploaded % 100 == 0 and total_files_uploaded != 0:
                         log_info(
                             "Successfully converted file "
                             + str(total_files_uploaded)
                             + " to "
                             "embeddings"
                         )
-                    if total_files_uploaded % 1000 == 0:
+
+                    # Upload every 1000 files into database for more efficiency and security.
+                    if total_files_uploaded % 1000 == 0 and total_files_uploaded != 0:
                         upload_embedding_to_database(embedding_outputs, database_path)
                         embedding_outputs = []
                         log_info(
                             "Successfully uploaded "
                             + str(total_files_uploaded)
-                            + " files to database"
+                            + " files to "
+                            + database_path
                         )
 
             if len(embedding_outputs) != 0:
@@ -69,13 +75,15 @@ class FaceMatchModel:
                 log_info(
                     "Successfully uploaded "
                     + str(total_files_uploaded)
-                    + " files to database"
+                    + " files to "
+                    + database_path
                 )
 
             return (
                 "Successfully uploaded "
                 + str(total_files_uploaded)
-                + " files to database"
+                + " files to "
+                + database_path
             )
         except Exception as e:
             return f"An error occurred: {str(e)}"
@@ -91,6 +99,7 @@ class FaceMatchModel:
                 database_path = get_resource_path(config["database_path"])
             else:
                 database_path = get_resource_path(database_path)
+
             # Get models from config file.
             config_path = get_resource_path("model_config.json")
             with open(config_path, "r") as config_file:
@@ -100,7 +109,7 @@ class FaceMatchModel:
             threshold = config["cosine-threshold"]
             face_confidence_threshold = config["face_confidence_threshold"]
 
-            # Call helper functions to get similar images.
+            # Call face_recognition function and perform similarity check to find identical persons.
             filename = os.path.basename(image_file_path)
             if filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp")):
                 status, embedding_outputs = detect_faces_and_get_embeddings(
@@ -110,25 +119,29 @@ class FaceMatchModel:
                     face_confidence_threshold,
                 )
                 matching_image_paths = []
+
+                # If image has a valid face, perform similarity check
                 if status:
                     for embedding_output in embedding_outputs:
                         if toggle_faiss:
+                            # Use Faiss
                             output = cosine_similarity_search_faiss(
                                 embedding_output["embedding"],
                                 database_path,
                                 threshold=threshold,
                             )
                         else:
+                            # Use linear similarity search
                             output = cosine_similarity_search(
                                 embedding_output["embedding"],
                                 database_path,
                                 threshold=threshold,
                             )
                         matching_image_paths.extend(output)
-                    return matching_image_paths
+                    return True, matching_image_paths
                 else:
-                    return "Error: Provided image does not have any face"
+                    return False, "Error: Provided image does not have any face"
             else:
-                return "Error: Provided file is not of image type"
+                return False, "Error: Provided file is not of image type"
         except Exception as e:
-            return f"An error occurred: {str(e)}"
+            return False, f"An error occurred: {str(e)}"
