@@ -33,6 +33,9 @@ class FaceMatchModel:
             # Call face_recognition function for each image file.
             total_files_uploaded = 0
             embedding_outputs = []
+
+            # Make image_directory_path absolute path since it is stored in database
+            image_directory_path = os.path.abspath(image_directory_path)
             for root, dirs, files in os.walk(image_directory_path):
                 for filename in files:
                     image_path = os.path.join(root, filename)
