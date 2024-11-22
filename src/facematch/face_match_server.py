@@ -116,7 +116,6 @@ def find_face_endpoint(
     return ResponseBody(root=BatchFileResponse(files=image_results))
 
 
-
 # Frontend Task Schema defining inputs and paraneters that users can enter
 def get_ingest_images_task_schema() -> TaskSchema:
     return TaskSchema(
