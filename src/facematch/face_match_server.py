@@ -128,13 +128,8 @@ def get_ingest_images_task_schema() -> TaskSchema:
         ],
         parameters=[
             ParameterSchema(
-                key="database_name",
-                label="Database Name",
-                value=TextParameterDescriptor(default="SampleDatabase"),
-            ),
-            ParameterSchema(
                 key="dropdown_database_name",
-                label="Database Name",
+                label="Choose Database",
                 value=EnumParameterDescriptor(
                     enum_vals=[
                         EnumVal(key=database_name, label=database_name)
@@ -146,6 +141,11 @@ def get_ingest_images_task_schema() -> TaskSchema:
                     ),
                 ),
             ),
+            ParameterSchema(
+                key="database_name",
+                label="New Database Name (Optional)",
+                value=TextParameterDescriptor(default="SampleDatabase"),
+            ),
         ],
     )
 
@@ -156,8 +156,8 @@ class BulkUploadInputs(TypedDict):
 
 
 class BulkUploadParameters(TypedDict):
-    database_name: str
     dropdown_database_name: str
+    database_name: str
 
 
 # Endpoint to allow users to upload images to database
