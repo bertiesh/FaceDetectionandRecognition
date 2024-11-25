@@ -62,7 +62,7 @@ class FaceMatchModel:
                         log_info(
                             "Successfully converted file "
                             + str(total_files_uploaded)
-                            + "/"
+                            + " / "
                             + str(total_files_read)
                             + " to "
                             "embeddings"
@@ -75,7 +75,7 @@ class FaceMatchModel:
                         log_info(
                             "Successfully uploaded "
                             + str(total_files_uploaded)
-                            + "/"
+                            + " / "
                             + str(total_files_read)
                             + " files to "
                             + database_path
@@ -86,7 +86,7 @@ class FaceMatchModel:
                 log_info(
                     "Successfully uploaded "
                     + str(total_files_uploaded)
-                    + "/"
+                    + " / "
                     + str(total_files_read)
                     + " files to "
                     + database_path
@@ -95,7 +95,7 @@ class FaceMatchModel:
             return (
                 "Successfully uploaded "
                 + str(total_files_uploaded)
-                + "/"
+                + " / "
                 + str(total_files_read)
                 + " files to "
                 + database_path
