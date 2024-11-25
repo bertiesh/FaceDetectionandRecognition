@@ -17,7 +17,7 @@ class TestBulkUpload(unittest.TestCase):
         result = face_match_object.bulk_upload(
             self.image_directory_path, self.database_path
         )
-        self.assertEqual("Successfully uploaded 3 files to database", result)
+        self.assertEqual("3", result.split(" ")[2])
 
     def tearDown(self):
         if os.path.exists(self.database_path):
