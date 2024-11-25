@@ -1,7 +1,7 @@
 import unittest
 
 from src.facematch.face_representation import detect_faces_and_get_embeddings
-from src.facematch.resource_path import get_resource_path
+from src.facematch.utils.resource_path import get_resource_path
 
 
 class TestApp(unittest.TestCase):

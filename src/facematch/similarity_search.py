@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 
-from src.facematch.logger import log_debug
+from src.facematch.utils.logger import log_debug
 
 
 def cosine_similarity_search(query_vector, database_filepath, top_n=5, threshold=None):
