@@ -31,6 +31,7 @@ class FaceMatchModel:
             face_confidence_threshold = config["face_confidence_threshold"]
 
             # Call face_recognition function for each image file.
+            total_files_read = 0
             total_files_uploaded = 0
             embedding_outputs = []
 
@@ -42,6 +43,9 @@ class FaceMatchModel:
                     if filename.lower().endswith(
                         (".png", ".jpg", ".jpeg", ".gif", ".bmp")
                     ):
+                        # Count the totalnumber of files read
+                        total_files_read += 1
+
                         # Get status and face_embeddings for the image
                         status, value = detect_faces_and_get_embeddings(
                             image_path,
@@ -58,6 +62,8 @@ class FaceMatchModel:
                         log_info(
                             "Successfully converted file "
                             + str(total_files_uploaded)
+                            + "/"
+                            + str(total_files_read)
                             + " to "
                             "embeddings"
                         )
@@ -69,6 +75,8 @@ class FaceMatchModel:
                         log_info(
                             "Successfully uploaded "
                             + str(total_files_uploaded)
+                            + "/"
+                            + str(total_files_read)
                             + " files to "
                             + database_path
                         )
@@ -78,6 +86,8 @@ class FaceMatchModel:
                 log_info(
                     "Successfully uploaded "
                     + str(total_files_uploaded)
+                    + "/"
+                    + str(total_files_read)
                     + " files to "
                     + database_path
                 )
@@ -85,6 +95,8 @@ class FaceMatchModel:
             return (
                 "Successfully uploaded "
                 + str(total_files_uploaded)
+                + "/"
+                + str(total_files_read)
                 + " files to "
                 + database_path
             )
