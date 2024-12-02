@@ -4,7 +4,7 @@ import os
 from flask_ml.flask_ml_client import MLClient
 from flask_ml.flask_ml_server.models import BatchDirectoryInput, Input
 
-from src.facematch.resource_path import get_resource_path
+from src.facematch.utils.resource_path import get_resource_path
 
 # Define the URL and set up client
 BULK_UPLOAD_MODEL_URL = "http://127.0.0.1:5000/bulkupload"
