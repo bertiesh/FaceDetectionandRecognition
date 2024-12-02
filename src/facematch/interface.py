@@ -3,10 +3,11 @@ import os
 
 from src.facematch.database_functions import upload_embedding_to_database
 from src.facematch.face_representation import detect_faces_and_get_embeddings
-from src.facematch.logger import log_info
-from src.facematch.resource_path import get_resource_path
 from src.facematch.similarity_search import (cosine_similarity_search,
                                              cosine_similarity_search_faiss)
+from src.facematch.utils.logger import log_info
+from src.facematch.utils.resource_path import (get_config_path,
+                                               get_resource_path)
 
 
 class FaceMatchModel:
@@ -15,7 +16,7 @@ class FaceMatchModel:
         try:
             # Get database from config file.
             if database_path is None:
-                config_path = get_resource_path("db_config.json")
+                config_path = get_config_path("db_config.json")
                 with open(config_path, "r") as config_file:
                     config = json.load(config_file)
                 database_path = get_resource_path(config["database_path"])
@@ -23,7 +24,7 @@ class FaceMatchModel:
                 database_path = get_resource_path(database_path)
 
             # Get models from config file.
-            config_path = get_resource_path("model_config.json")
+            config_path = get_config_path("model_config.json")
             with open(config_path, "r") as config_file:
                 config = json.load(config_file)
             model_name = config["model_name"]
@@ -108,7 +109,7 @@ class FaceMatchModel:
         try:
             # Get database from config file.
             if database_path is None:
-                config_path = get_resource_path("db_config.json")
+                config_path = get_config_path("db_config.json")
                 with open(config_path, "r") as config_file:
                     config = json.load(config_file)
                 database_path = get_resource_path(config["database_path"])
@@ -116,7 +117,7 @@ class FaceMatchModel:
                 database_path = get_resource_path(database_path)
 
             # Get models from config file.
-            config_path = get_resource_path("model_config.json")
+            config_path = get_config_path("model_config.json")
             with open(config_path, "r") as config_file:
                 config = json.load(config_file)
             model_name = config["model_name"]

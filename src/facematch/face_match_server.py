@@ -13,8 +13,8 @@ from flask_ml.flask_ml_server.models import (BatchDirectoryInput,
                                              TextResponse)
 
 from src.facematch.interface import FaceMatchModel
-from src.facematch.logger import log_info
-from src.facematch.resource_path import get_resource_path
+from src.facematch.utils.logger import log_info
+from src.facematch.utils.resource_path import get_resource_path
 
 server = MLServer(__name__)
 
