@@ -109,9 +109,9 @@ python -m src.facematch.face_match_server
 ## Metrics
 | Face Recognition Model | Number of Faces in Database | Upload Time (in seconds) | Search Time per Image (in seconds) | Top-n | Faiss Accuracy |
 |-------------------------|-----------------------------|---------------------------|------------------------------------|-------|----------------|
-| ArcFace                | 1680                        | 242                       | < 2                                | 10    | 93.2           |
+| ArcFace                | 1680                        | 242                       | < 1.5                              | 10    | 93.2           |
 | FaceNet                | 1680                        | 463                       | < 2                                | 10    | 94             |
-| VGGFace                | 1680                        | 650                       | < 2                                | 10    | 88.8           |
+| VGGFace                | 1680                        | 650                       | < 3                                | 10    | 90             |
 
 
 ## Testing
