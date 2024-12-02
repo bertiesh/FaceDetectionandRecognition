@@ -4,6 +4,7 @@ FaceMatch is a system for identifying facial matches within an image database. W
 
 Built with a client-server architecture using Flask-ML, FaceMatch provides structured support for efficient client-server communication tailored to ML applications.
 
+---
 
 # Getting started
 
@@ -44,6 +45,9 @@ _Run below command from root directory of project._
 ```
 pip install -r requirements.txt
 ```
+
+---
+
 # Usage
 
 ## CLI
@@ -98,6 +102,23 @@ python -m src.facematch.face_match_server
 - Choose the model from list of available models under the **MODELS** tab.
 
 - Checkout the Inspect page to learn more about using the model.
+
+---
+
+# Metrics and Testing
+## Metrics
+| Face Recognition Model | Number of Faces in Database | Upload Time (in seconds) | Search Time per Image (in seconds) | Top-n | Faiss Accuracy |
+|-------------------------|-----------------------------|---------------------------|------------------------------------|-------|----------------|
+| ArcFace                | 1680                        | 242                       | < 2                                | 10    | 93.2           |
+| FaceNet                | 1680                        | 463                       | < 2                                | 10    | 94             |
+| VGGFace                | 1680                        | 650                       | < 2                                | 10    | 88.8           |
+
+
+## Testing
+
+Check out [Testing README](./benchmark_testing/README.md) for complete details on dataset and testing.
+
+---
 
 # For Developers
 
