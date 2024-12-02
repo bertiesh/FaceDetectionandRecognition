@@ -2,7 +2,7 @@ import os
 import unittest
 
 from src.facematch.interface import FaceMatchModel
-from src.facematch.resource_path import get_resource_path
+from src.facematch.utils.resource_path import get_resource_path
 
 
 class TestMatchFace(unittest.TestCase):
