@@ -14,7 +14,7 @@ sleep 10
 start_time=$(date +%s)
 
 # Run your functions or any additional Python commands here
-python ../src/Sample_Client/sample_find_face_client.py "\path\to\input\image"
+python ../src/Sample_Client/sample_find_face_client.py --file_paths "\path\to\image" --database_name "sample_db"
 
 # Calculate total time taken
 end_time=$(date +%s)
