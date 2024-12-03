@@ -14,7 +14,7 @@ sleep 10
 start_time=$(date +%s)
 
 # Run your functions or any additional Python commands here
-python ../src/Sample_Client/sample_bulk_upload_client.py "\path\to\image\directory"
+python ../src/Sample_Client/sample_bulk_upload_client.py --directory_paths "\path\to\input\directory" --database_name "sample_db"
 
 # Calculate total time taken
 end_time=$(date +%s)
