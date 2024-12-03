@@ -49,10 +49,10 @@ def count_files(directory):
 
 # Specify the root directory you want to start from
 root_directory = "\\path\\to\\root\\directory"
+upload_directory = "\\path\\to\\upload\\directory"
 test_directory = "\\path\\to\\test\\directory"
-verify_directory = "\\path\\to\\verify\\directory"
-process_directory(root_directory, test_directory, verify_directory)
+process_directory(root_directory, upload_directory, test_directory)
 
 # Print the number of files in the test and verify directories
+print(f"Number of files in upload directory: {count_files(upload_directory)}")
 print(f"Number of files in test directory: {count_files(test_directory)}")
-print(f"Number of files in verify directory: {count_files(verify_directory)}")
