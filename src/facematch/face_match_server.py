@@ -13,6 +13,7 @@ from flask_ml.flask_ml_server.models import (BatchDirectoryInput,
                                              TextResponse)
 
 from src.facematch.interface import FaceMatchModel
+from src.facematch.utils.GPU import check_cuDNN_version
 from src.facematch.utils.logger import log_info
 from src.facematch.utils.resource_path import get_resource_path
 
@@ -98,6 +99,9 @@ def find_face_endpoint(
         "data", parameters["database_name"] + ".csv"
     )
 
+    # Check CUDNN compatability
+    check_cuDNN_version()
+
     # Call model function to find matches
     status, results = face_match_model.find_face(
         input_file_paths[0], parameters["database_name"]
@@ -181,6 +185,10 @@ def bulk_upload_endpoint(
     parameters["database_name"] = os.path.join(
         "data", parameters["database_name"] + ".csv"
     )
+
+    # Check CUDNN compatability
+    check_cuDNN_version()
+
     # Get list of directory paths from input
     input_directory_paths = [
         item.path for item in inputs["directory_paths"].directories
