@@ -14,8 +14,12 @@ sleep 10
 start_time=$(date +%s)
 
 # Define the directory containing the files and the output CSV file
-input_directory="\path\to\input\directory"
-output_csv="\path\to\output\csv"
+input_directory="\\path\\to\\input\\directory" # Path to directory of query images
+output_csv="\\path\\to\\output\\csv" # Path to csv file containing top-n matches
+
+# Sample directory path
+# input_directory = "<path to dataset folder>\\LFWdataset\\sample_queries"
+# output_csv = "<path to dataset folder>\\LFWdataset\\output.csv"
 
 # Initialize the CSV file with headers
 echo "filename,result" > "$output_csv"

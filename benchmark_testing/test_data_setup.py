@@ -47,10 +47,21 @@ def count_files(directory):
     )
 
 
-# Specify the root directory you want to start from
-root_directory = "\\path\\to\\root\\directory"
-upload_directory = "\\path\\to\\upload\\directory"
-test_directory = "\\path\\to\\test\\directory"
+# Edit the following paths to match your system's directories
+
+root_directory = "\\path\\to\\root\\directory"  # Original dataset directory
+upload_directory = "\\path\\to\\upload\\directory"  # Directory where images to be uploaded to database will be stored
+test_directory = (
+    "\\path\\to\\test\\directory"  # Directory where query images will be stored
+)
+
+"""
+Sample directories
+root_directory = "<path to dataset folder>\\LFWdataset\\lfw"
+upload_directory = "<path to dataset folder>\\LFWdataset\\sample_database" 
+test_directory = "<path to dataset folder>\\LFWdataset\\sample_queries" 
+"""
+
 process_directory(root_directory, upload_directory, test_directory)
 
 # Print the number of files in the test and verify directories
