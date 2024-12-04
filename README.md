@@ -106,6 +106,16 @@ python -m src.facematch.face_match_server
 ---
 
 # Metrics and Testing
+
+We conduct a series of experiments to evaluate the performance and accuracy of FaceMatch. The experiments are conducted on a dataset of 1,680 images of people from the Labelled Faces in the Wild (LFW) dataset. 
+
+We evaluate FaceMatch using the following metrics:
+
+1. **Upload Time**: The time taken to upload images to the database.
+2. **Search Time per Image**: The time taken to find matches for a single image.
+3. **Faiss Accuracy (Top-n)**: The percentage of images in the database that have at least one match within the top-n results using FAISS search algorithm.  Atleast one match in top-n is considered a positive match, meaning that the person of interest is identified within the image.
+
+
 ## Metrics
 | Face Recognition Model | Number of Faces in Database | Upload Time (in seconds) | Search Time per Image (in seconds) | Top-n | Faiss Accuracy |
 |-------------------------|-----------------------------|---------------------------|------------------------------------|-------|----------------|
@@ -114,9 +124,17 @@ python -m src.facematch.face_match_server
 | VGGFace                | 1680                        | 650                       | < 3                                | 10    | 90             |
 
 
+The above metrics were calculated using the following system configuration:
+
+- **OS**: Windows 11 Pro 64-bit
+- **Processor**: AMD Ryzen 7 7735HS with Radeon Graphics (16 CPUs), ~3.2 GHz
+- **RAM**: 32 GB
+
 ## Testing
 
 Check out [Testing README](./benchmark_testing/README.md) for complete details on dataset and testing.
+
+Check out this [document](https://docs.google.com/document/d/1CpN__oPgmAvY65s-tWg4X-pZPCPwNEAU-ULrkdKWES4/edit?usp=sharing) for more details on the face detection and recognition models, datasets and testing.
 
 ---
 
