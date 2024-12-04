@@ -13,8 +13,11 @@ sleep 10
 # Start timer
 start_time=$(date +%s)
 
-# Run your functions or any additional Python commands here
-python ../src/Sample_Client/sample_bulk_upload_client.py --directory_paths "\path\to\input\directory" --database_name "sample_db"
+# Call client script to upload images from to database (the code currently only accepts one directory at a time)
+python ../src/Sample_Client/sample_bulk_upload_client.py --directory_paths "\\path\\to\\sample_database\\directory" --database_name "sample_db"
+
+# Sample directory path
+# "<path to dataset folder>\\LFWdataset\\sample_database"
 
 # Calculate total time taken
 end_time=$(date +%s)

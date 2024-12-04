@@ -4,7 +4,11 @@ import pandas as pd
 from sklearn.metrics import accuracy_score
 
 # Load the CSV file
-file_path = "path\\to\\output\\csv"
+file_path = "path\\to\\output\\csv"  # Path to csv file containing top-n matches
+
+# Sample csv path
+# file_path = "<path to dataset folder>\\LFWdataset\\output.csv"
+
 data = pd.read_csv(file_path)
 
 # Extract ground truth names (base names without numeric suffixes)
