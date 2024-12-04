@@ -13,8 +13,11 @@ sleep 10
 # Start timer
 start_time=$(date +%s)
 
-# Run your functions or any additional Python commands here
+# Call client script to find match for an image (code currently only accepts one file_path at a time)
 python ../src/Sample_Client/sample_find_face_client.py --file_paths "\path\to\image" --database_name "sample_db"
+
+# Sample file path
+# "<path to dataset folder>\\LFWdataset\\sample_queries\\image.jpg"
 
 # Calculate total time taken
 end_time=$(date +%s)

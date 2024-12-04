@@ -40,6 +40,7 @@ Note: One such pair of sample database and queries directories have already been
 
     > [!NOTE]\
     > *All the code below should be executed from the `benchmark_testing` directory.*
+    > Make sure to execute all .sh files using git bash.
 
 2. **Run Test Data Setup (Optional)**
    - Replace the directory names in the `test_data_setup.py` file with appropriate directory locations.
