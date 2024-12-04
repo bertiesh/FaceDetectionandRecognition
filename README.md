@@ -134,6 +134,8 @@ The above metrics were calculated using the following system configuration:
 
 Check out [Testing README](./benchmark_testing/README.md) for complete details on dataset and testing.
 
+Check out this [document](https://docs.google.com/document/d/1CpN__oPgmAvY65s-tWg4X-pZPCPwNEAU-ULrkdKWES4/edit?usp=sharing) for more details on the face detection and recognition models, datasets and testing.
+
 ---
 
 # For Developers
