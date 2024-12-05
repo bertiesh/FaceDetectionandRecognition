@@ -176,10 +176,10 @@ def bulk_upload_endpoint(
 ) -> ResponseBody:
     # If dropdown value chosen is Create a new database, then add database path to available databases, otherwise set
     # database path to dropdown value
-    if parameters["dropdown_database_name"] == "Create a new database":
-        available_databases.append(parameters["database_name"])
-    else:
+    if parameters["dropdown_database_name"] != "Create a new database":
         parameters["database_name"] = parameters["dropdown_database_name"]
+
+    new_database_name = parameters["database_name"]
 
     # Convert database name to absolute path to database in resources directory
     parameters["database_name"] = os.path.join(
@@ -199,6 +199,12 @@ def bulk_upload_endpoint(
         input_directory_paths[0], parameters["database_name"]
     )
 
+    if response.startswith("Successfully uploaded") and response.split(" ")[2] != "0":
+        # Some files were uploaded
+        if parameters["dropdown_database_name"] == "Create a new database":
+            # Add new database to available databases if database name is not already in available databases
+            if parameters["database_name"] not in available_databases:
+                available_databases.append(new_database_name)
     return ResponseBody(root=TextResponse(value=response))
 
 
