@@ -45,6 +45,13 @@ inputs = {
 response = client.request(inputs, parameters)
 
 # Show results to user
-print("\nMatches found")
-for file in response["files"]:
-    print(file["path"].split("\\")[-1])
+
+# If reponse is a TextResponse, print the value
+if response["output_type"] == "text":
+    print(response["value"])
+
+else:
+    # Show matches found
+    print("\nMatches found")
+    for file in response["files"]:
+        print(file["path"].split("\\")[-1])
