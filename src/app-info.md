@@ -8,9 +8,17 @@ To populate a database with images, utilize the **Upload Images to Database** en
 
 ### Inputs
 
-- A directory containing images to be added to the database.
+- **Image Directory:** A directory containing images to be added to the database.
 
-- For multiple directories, repeat the upload process sequentially, ensuring that each previous directory has been successfully added before proceeding.
+    - For multiple directories, repeat the upload process sequentially, ensuring that each previous directory has been successfully added before proceeding.
+
+- **Choose database:** A dropdown menu to select either an existing database to upload the images to or the option to create a new database.
+
+- **New Database Name (Optional):** A text input field to enter the name for the new database. 
+
+> NOTE: 
+> Use only if you would like to create a new database.
+> Ensure that the "Create a new database" option is selected in 'Choose database' dropdown.
 
 ### Outputs
 
@@ -22,7 +30,9 @@ To populate a database with images, utilize the **Upload Images to Database** en
 
 ### Inputs
 
-- A query image to be compared against the database.
+- **Image Path:** A query image to be compared against the database.
+
+- **Database Name:** Choose the database to search within.
 
 ### Outputs 
 
