@@ -50,7 +50,7 @@ pip install -r requirements.txt
 
 # Usage
 
-Sample dataset to test the model: The images in the `\resources\sample_images` folder can be used as the database, and `\resources\test_image.jpg` can be used as the query image to test the model.
+**Sample dataset to test the model:** The images in the `\resources\sample_images` folder can be used as the database, and `\resources\test_image.jpg` can be used as the query image to test the model.
 
 ## CLI
 
