@@ -105,7 +105,9 @@ class FaceMatchModel:
             return f"An error occurred: {str(e)}"
 
     # Function that takes in path to image and returns all images that have the same person.
-    def find_face(self, image_file_path, database_path=None, toggle_faiss=True):
+    def find_face(
+        self, image_file_path, threshold=None, database_path=None, toggle_faiss=True
+    ):
         try:
             # Get database from config file.
             if database_path is None:
@@ -122,9 +124,9 @@ class FaceMatchModel:
                 config = json.load(config_file)
             model_name = config["model_name"]
             detector_backend = config["detector_backend"]
-            threshold = config["cosine-threshold"]
             face_confidence_threshold = config["face_confidence_threshold"]
-
+            if threshold is None:
+                threshold = config["cosine-threshold"]
             # Call face_recognition function and perform similarity check to find identical persons.
             filename = os.path.basename(image_file_path)
             if filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp")):
