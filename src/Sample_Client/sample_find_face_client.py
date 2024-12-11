@@ -22,6 +22,13 @@ parser.add_argument(
     "--database_name", required=True, type=str, help="Name of the database file"
 )
 
+# Face Similarity threshold from user
+parser.add_argument(
+    "--similarity_threshold",
+    type=float,
+    help="Return matches with similarity above this threshold",
+)
+
 args = parser.parse_args()
 
 # Check if database exists
@@ -32,7 +39,10 @@ if not os.path.exists(
     exit()
 
 # Set parameters and inputs for the request
-parameters = {"database_name": args.database_name}
+parameters = {
+    "similarity_threshold": args.similarity_threshold,
+    "database_name": args.database_name,
+}
 inputs = {
     "image_paths": Input(
         root=BatchFileInput.model_validate(

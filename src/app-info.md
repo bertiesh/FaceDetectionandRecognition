@@ -34,6 +34,20 @@ To populate a database with images, utilize the **Upload Images to Database** en
 
 - **Database Name:** Choose the database to search within.
 
+- **Similarity Threshold:** A threshold value to determine the minimum similarity score required for a match to be considered a positive match. 
+
+Default value provides a tradeoff between two things, it tries to ensure we find the right person when they are in the database while also avoiding finding someone when they aren't there.  This setting can be adjusted depending on whether you want to focus more on finding as many matches as possible (decrease threshold) or being extra careful to avoid wrong ones (increase threshold).
+
+
+**Guide to tuning threshold:** 
+- Increase the threshold value to narrow down the search to higher similarity faces. 
+
+   **Sample case:** You could increase threshold if the search image is clear and up-to-date, so you can look for a match with a high degree of confidence.
+
+- Decrese the threshold if you wish to broaden the search to include more variability in faces. 
+
+    **Sample case:** You could decrease threshold if the search image is blurry or outdated, so you are open to some variability in the possible matches.
+
 ### Outputs 
 
 - Refer to the results section for the matches found within the database.

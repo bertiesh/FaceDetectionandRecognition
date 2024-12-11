@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 from typing import List, TypedDict
@@ -6,8 +7,10 @@ from flask_ml.flask_ml_server import MLServer, load_file_as_string
 from flask_ml.flask_ml_server.models import (BatchDirectoryInput,
                                              BatchFileInput, BatchFileResponse,
                                              EnumParameterDescriptor, EnumVal,
-                                             FileResponse, InputSchema,
+                                             FileResponse,
+                                             FloatRangeDescriptor, InputSchema,
                                              InputType, ParameterSchema,
+                                             RangedFloatParameterDescriptor,
                                              ResponseBody, TaskSchema,
                                              TextParameterDescriptor,
                                              TextResponse)
@@ -39,6 +42,13 @@ csv_files = list({file.stem for file in Path(database_directory_path).glob("*.cs
 
 available_databases.extend(csv_files)
 
+# Read default similarity threshold from config file
+config_path = os.path.join(script_dir, "config", "model_config.json")
+with open(config_path, "r") as config_file:
+    config = json.load(config_file)
+
+default_threshold = config["cosine-threshold"]
+
 
 # Frontend Task Schema defining inputs and paraneters that users can enter
 def get_ingest_query_image_task_schema() -> TaskSchema:
@@ -63,6 +73,14 @@ def get_ingest_query_image_task_schema() -> TaskSchema:
                     default=(available_databases[0]),
                 ),
             ),
+            ParameterSchema(
+                key="similarity_threshold",
+                label="Similarity Threshold",
+                value=RangedFloatParameterDescriptor(
+                    range=FloatRangeDescriptor(min=-1.0, max=1.0),
+                    default=default_threshold,
+                ),
+            ),
         ],
     )
 
@@ -78,6 +96,7 @@ class FindFaceInputs(TypedDict):
 
 class FindFaceParameters(TypedDict):
     database_name: str
+    similarity_threshold: float
 
 
 # Endpoint that is used to find matches to a query image
@@ -104,7 +123,9 @@ def find_face_endpoint(
 
     # Call model function to find matches
     status, results = face_match_model.find_face(
-        input_file_paths[0], parameters["database_name"]
+        input_file_paths[0],
+        parameters["similarity_threshold"],
+        parameters["database_name"],
     )
     log_info(status)
     log_info(results)
