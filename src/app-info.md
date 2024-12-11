@@ -36,7 +36,7 @@ To populate a database with images, utilize the **Upload Images to Database** en
 
 - **Similarity Threshold:** A threshold value to determine the minimum similarity score required for a match to be considered a positive match. 
 
-Default value provides a tradeoff between two things, it tries to ensure we find the right person when they are in the database while also avoiding saying we found someone when they aren't there.  This setting can be adjusted depending on whether you want to focus more on finding as many matches as possible (decrease threshold) or being extra careful to avoid wrong ones (increase threshold).
+Default value provides a tradeoff between two things, it tries to ensure we find the right person when they are in the database while also avoiding finding someone when they aren't there.  This setting can be adjusted depending on whether you want to focus more on finding as many matches as possible (decrease threshold) or being extra careful to avoid wrong ones (increase threshold).
 
 
 **Guide to tuning threshold:** 

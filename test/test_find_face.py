@@ -17,7 +17,7 @@ class TestMatchFace(unittest.TestCase):
         face_match_object = FaceMatchModel()
         face_match_object.bulk_upload(self.image_directory_path, self.database_path)
         status, matching_images = face_match_object.find_face(
-            self.image_file_path, self.database_path
+            self.image_file_path, threshold=None, database_path=self.database_path
         )
         self.assertEqual(1, len(matching_images))
         self.assertEqual("me.png", os.path.basename(matching_images[0]))
