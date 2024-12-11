@@ -75,15 +75,16 @@ python -m src.Sample_Client.sample_bulk_upload_client --directory_paths <path_to
 
 ### Task 2: Find matching faces
 ```
-python -m src.Sample_Client.sample_find_face_client --file_paths <path_to_image> --database_name <database_name>
+python -m src.Sample_Client.sample_find_face_client --file_paths <path_to_image> --database_name <database_name> --similarity_threshold <similarity_threshold>
 ```
-Note: The name of the database needs to be an existing database you wish to query.
+> Note: The name of the database needs to be an existing database you wish to query.
+> The default similarity threshold, 0.45 is used if no similarity threshold is provided.
 
 
 _Run with Sample test image: (Requires absolute path of image)_
 
 ```
-python -m src.Sample_Client.sample_find_face_client --file_paths <path_to_project>\resources\test_image.jpg --database_name test_database
+python -m src.Sample_Client.sample_find_face_client --file_paths <path_to_project>\resources\test_image.jpg --database_name test_database --similarity_threshold 0.5
 ```
 
 ## Rescue-Box frontend
