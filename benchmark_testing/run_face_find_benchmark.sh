@@ -37,6 +37,9 @@ files=($(find "$input_directory" -maxdepth 1 -type f | sort))
 # Similarity Thresholds to iterate over
 similarity_thresholds=(0.2 0.45 0.48 0.54 0.63 0.68 0.7 0.74)
 
+# create file to store search times
+echo "search_time,model,similarity_threshold" > "${output_csv}_search_times_${model}"
+
 for st in "${similarity_thresholds[@]}"; do
     # Start timer
     start_time=$(date +%s)
@@ -65,6 +68,8 @@ for st in "${similarity_thresholds[@]}"; do
 
     # Print total time taken
     echo "Total time for threshold = $st taken: $total_time seconds"
+    # append search time to output file
+    echo "${total_time},${model},${st}" >> "${output_csv}_search_times_${model}"
 done
 
 # Stop the server
