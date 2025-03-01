@@ -66,7 +66,8 @@ def cosine_similarity_search_faiss(
         # Filter the DataFrame based on the threshold
         results = results[results["similarity"] >= threshold]
     
-    results = results.sort_values(by="similarity")
+    # sort results by similarity in descending order
+    results = results.sort_values(by="similarity", ascending=False)
 
     # Return the image paths corresponding to the top N similar vectors or vectors with similarity higher than threshold
     top_img_paths = results["image_path"].to_list()
