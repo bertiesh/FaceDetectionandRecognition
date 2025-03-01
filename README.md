@@ -46,6 +46,35 @@ _Run below command from root directory of project._
 pip install -r requirements.txt
 ```
 
+## Mac-specific user setup with conda/miniforge
+
+If miniforge is not installed on your machine, please install it as below:
+
+```
+curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh"
+chmod +x Miniforge3-MacOSX-arm64.sh
+./Miniforge3-MacOSX-arm64.sh
+```
+Then set up a conda environment:
+```
+conda create -n facematch-env python=3.10
+conda activate facematch-env
+```
+conda install the following:
+```
+conda install -c conda-forge numpy=1.24.3
+conda install -c conda-forge tensorflow=2.10.0
+conda install -c conda-forge pandas
+conda install -c pytorch faiss-cpu
+conda install -c conda-forge opencv
+conda install -c conda-forge scikit-learn
+```
+install the remaining dependencies:
+```
+pip install -r mac_requirements.txt
+```
+
+
 ---
 
 # Usage
