@@ -14,9 +14,9 @@ sleep 10
 start_time=$(date +%s)
 
 # Define the directory containing the files and the output CSV file
-input_directory="\\path\\to\\input\\directory" # Path to directory of query images
-output_csv="\\path\\to\\output\\csv" # Path to csv file containing top-n matches
-similarity_threshold = 0 #Change this value appropriately if needed
+input_directory="/Users/xyx/Documents/spring2025/596E/Face/FaceDetectionandRecognition/benchmark_testing/LFWdataset/new_sample_queries" # Path to directory of query images
+output_csv="/Users/xyx/Documents/spring2025/596E/Face/FaceDetectionandRecognition/benchmark_testing/LFWdataset/output.csv" # Path to csv file containing top-n matches
+similarity_threshold=0.74 #Change this value appropriately if needed
 # Sample directory path
 # input_directory = "<path to dataset folder>\\LFWdataset\\sample_queries"
 # output_csv = "<path to dataset folder>\\LFWdataset\\output.csv"

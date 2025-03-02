@@ -13,6 +13,7 @@ from src.facematch.utils.resource_path import (get_config_path,
 class FaceMatchModel:
     # Function that takes in path to directory of images to upload to database and returns a success or failure message.
     def bulk_upload(self, image_directory_path, database_path=None):
+        
         try:
             # Get database from config file.
             if database_path is None:
@@ -25,6 +26,7 @@ class FaceMatchModel:
 
             # Get models from config file.
             config_path = get_config_path("model_config.json")
+            
             with open(config_path, "r") as config_file:
                 config = json.load(config_file)
             model_name = config["model_name"]
@@ -41,6 +43,7 @@ class FaceMatchModel:
             for root, dirs, files in os.walk(image_directory_path):
                 for filename in files:
                     image_path = os.path.join(root, filename)
+                    log_info("Reading image: " + image_path)
                     if filename.lower().endswith(
                         (".png", ".jpg", ".jpeg", ".gif", ".bmp")
                     ):
@@ -54,6 +57,7 @@ class FaceMatchModel:
                             detector_backend,
                             face_confidence_threshold,
                         )
+                        
                         if status:
                             total_files_uploaded += 1
                             embedding_outputs.extend(value)

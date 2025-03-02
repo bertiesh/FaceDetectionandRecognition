@@ -1,0 +1,64 @@
+Metadata-Version: 2.3
+Name: flask_ml
+Version: 0.2.5
+Summary: A Flask extension for running machine learning code
+Project-URL: Homepage, https://github.com/UMass-Rescue/Flask-ML
+Author-email: Prasanna Lakkur Subramanyam <psubramanyam@umass.edu>, Atharva Kale <aukale@umass.edu>, Shreyan Mallik <smallik@umass.edu>, Shriram Giridhara <sgiridhara@umass.edu>
+License-File: LICENSE
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Python: >=3.10
+Requires-Dist: datamodel-code-generator
+Requires-Dist: flask
+Requires-Dist: pydantic
+Requires-Dist: requests
+Provides-Extra: dev
+Requires-Dist: autoflake8; extra == 'dev'
+Requires-Dist: black; extra == 'dev'
+Requires-Dist: flake8; extra == 'dev'
+Requires-Dist: isort; extra == 'dev'
+Requires-Dist: mypy; extra == 'dev'
+Requires-Dist: pytest; extra == 'dev'
+Requires-Dist: pytest-cov; extra == 'dev'
+Requires-Dist: types-requests; extra == 'dev'
+Description-Content-Type: text/markdown
+
+# Flask-ML
+
+![](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)
+[![codecov](https://codecov.io/github/UMass-Rescue/Flask-ML/graph/badge.svg?token=DOXIBULQQS)](https://codecov.io/github/UMass-Rescue/Flask-ML)
+
+Flask-ML helps users easily deploy their ML models as a web service. Flask-ML Server, similar to Flask, allows the user to specify web services using the decorator pattern. But Flask-ML allows users to specify the input schema being expected by the ML function and provides helper classes to form response objects for the outputs produced by the ML function. Furthermore, users can specify schemas for their inputs and outputs in order to expose their model via the frontend provided by [RescueBox-Desktop](https://github.com/UMass-Rescue/RescueBox-Desktop).
+
+### Installation
+
+To install Flask-ML
+```
+pip install flask-ml
+```
+
+### Usage examples
+
+#### Server
+
+Refer simple_server.py, more_server_examples.py, and simple_cli.py
+
+#### Client
+
+Refer client_example.py
+
+#### Development
+
+Install both production and dev dependencies
+```
+pip install -e ".[dev]"
+```
+
+To re-generate the model classes, run
+```
+make generate-models
+```

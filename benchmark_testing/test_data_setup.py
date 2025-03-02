@@ -49,10 +49,10 @@ def count_files(directory):
 
 # Edit the following paths to match your system's directories
 
-root_directory = "\\path\\to\\root\\directory"  # Original dataset directory
-upload_directory = "\\path\\to\\upload\\directory"  # Directory where images to be uploaded to database will be stored
+root_directory = "/Users/xyx/Documents/spring2025/596E/Face/FaceDetectionandRecognition/benchmark_testing/LFWdataset/lfw"  # Original dataset directory
+upload_directory = "/Users/xyx/Documents/spring2025/596E/Face/FaceDetectionandRecognition/benchmark_testing/LFWdataset/sample_database"  # Directory where images to be uploaded to database will be stored
 test_directory = (
-    "\\path\\to\\test\\directory"  # Directory where query images will be stored
+    "/Users/xyx/Documents/spring2025/596E/Face/FaceDetectionandRecognition/benchmark_testing/LFWdataset/sample_queries"  # Directory where query images will be stored
 )
 
 """

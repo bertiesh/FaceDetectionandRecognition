@@ -14,7 +14,7 @@ sleep 10
 start_time=$(date +%s)
 
 # Call client script to find match for an image (code currently only accepts one file_path at a time)
-python ../src/Sample_Client/sample_find_face_client.py --file_paths "\path\to\image" --database_name "sample_db"
+python ../src/Sample_Client/sample_find_face_client.py --file_paths "/Users/xyx/Documents/spring2025/596E/Face/FaceDetectionandRecognition/benchmark_testing/LFWdataset/sample_queries/Abdullatif_Sener_0002.jpg" --database_name "sample_db"
 
 # Sample file path
 # "<path to dataset folder>\\LFWdataset\\sample_queries\\image.jpg"

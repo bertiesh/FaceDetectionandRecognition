@@ -1,4 +1,5 @@
 from deepface import DeepFace
+from src.facematch.utils.logger import log_info
 
 
 # Function that takes in path to image and returns a status field and a list of face embeddings and corresponding
@@ -7,12 +8,17 @@ def detect_faces_and_get_embeddings(
     image_path, model_name, detector_backend, face_confidence_threshold=0
 ):
     try:
+        log_info(
+            f"Detecting faces in image {image_path} with model {model_name} and detector backend {detector_backend}"
+        )
+        
         results = DeepFace.represent(
             image_path,
             model_name=model_name,
             detector_backend=detector_backend,
             enforce_detection=True,
         )
+        log_info(results)
 
         # Check if each face has a high enough confidence score
         face_embeddings = []

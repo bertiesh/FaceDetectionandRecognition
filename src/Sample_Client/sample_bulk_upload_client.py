@@ -31,6 +31,7 @@ args = parser.parse_args()
 
 # Dropdown database path is used to give the option of creating a new database and selecting an existing database for users in frontend
 # Set dropdown database path to the name of the database if it exists, otherwise set it to "Create a new database"
+
 if os.path.exists(get_resource_path((args.database_name + ".csv"))):
     dropdown_database_name = args.database_name
 else:
@@ -52,8 +53,11 @@ inputs = {
         )
     )
 }
-
+response = None
 # Response from the server
-response = client.request(inputs, parameters)
+try:
+    response = client.request(inputs, parameters)
+except Exception as e:
+    print("Error:", e)
 print("Bulk Upload model response")
 print(response, "\n")

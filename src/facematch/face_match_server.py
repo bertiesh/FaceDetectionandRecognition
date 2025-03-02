@@ -220,6 +220,8 @@ def bulk_upload_endpoint(
         input_directory_paths[0], parameters["database_name"]
     )
 
+    log_info(response)
+
     if response.startswith("Successfully uploaded") and response.split(" ")[2] != "0":
         # Some files were uploaded
         if parameters["dropdown_database_name"] == "Create a new database":
