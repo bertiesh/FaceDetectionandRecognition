@@ -76,13 +76,15 @@ for top_n, n in zip(top_n, N):
     # Sample csv path
     # file_path = "<path to dataset folder>\\LFWdataset\\output.csv"
 
+    # import pdb; pdb.set_trace();
+
     with open(benchmark_results_path, 'w', newline='') as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(['model', 'similarity threshold', 'accuracy', 'precision', 'recall', 'f1', 'tpr', 'fpr', 'tnr', 'fnr'])
 
     for filename in os.listdir(output_directory):
         if not filename.endswith('.csv'):
-            break
+            continue
 
         model_name, similarity_threshold = os.path.splitext(filename)[0].split("_")[-2:]
 
@@ -92,7 +94,7 @@ for top_n, n in zip(top_n, N):
         midpoint = len(data) // 2
 
         # Set `true_label` column
-        data["true_label"] = True #*400 + [False]*100
+        data["true_label"] = [True]*400 + [False]*100
 
         # Apply the function to each row to create a 'predicted' column with boolean values
         data["predicted"] = data.apply(lambda row: check_match(row, n), axis=1)
