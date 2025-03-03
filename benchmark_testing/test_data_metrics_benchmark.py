@@ -76,8 +76,6 @@ for top_n, n in zip(top_n, N):
     # Sample csv path
     # file_path = "<path to dataset folder>\\LFWdataset\\output.csv"
 
-    # import pdb; pdb.set_trace();
-
     with open(benchmark_results_path, 'w', newline='') as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(['model', 'similarity threshold', 'accuracy', 'precision', 'recall', 'f1', 'tpr', 'fpr', 'tnr', 'fnr'])

@@ -40,7 +40,7 @@ class FaceMatchModel:
             image_directory_path = os.path.abspath(image_directory_path)
             for root, dirs, files in os.walk(image_directory_path):
                 files.sort()
-                for filename in files[0:500]:
+                for filename in files:
                     image_path = os.path.join(root, filename)
                     if filename.lower().endswith(
                         (".png", ".jpg", ".jpeg", ".gif", ".bmp")
