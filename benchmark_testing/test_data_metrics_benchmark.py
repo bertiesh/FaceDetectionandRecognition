@@ -49,10 +49,8 @@ def check_match(row, n, true_label_index=None):
     ground_truth = re.match(r"(.+?)_\d+\.jpg", row["filename"]).group(1)
 
     if not row["true_label"]:
-        if len(predicted_base_names) > 0:
-            return True
-        else:
-            return False
+        return len(predicted_base_names) > 0
+
     # Check if the ground truth matches any of the filtered base names
     return ground_truth in predicted_base_names
 
