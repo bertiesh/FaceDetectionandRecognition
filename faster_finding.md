@@ -39,16 +39,21 @@ Record worker allocation decisions for troubleshooting
 
 #### Tests
 Tested using ArcFace + yolov8 with threshold 0.48 on 500 images
-benchmark
-700+s
+Benchmarks 665s
+Accuracy: 0.488 Precision: 0.49282296650717705 Recall: 0.824 F1 Score: 0.6167664670658682
+True Positive Rate: 0.824 False Positive Rate: 0.848
 
-using img preprocessing:
-The time is reduced to 540s but the accuracy is also reduced to 0.69
+Resize 
+50% 649s
+Accuracy: 0.482 Precision: 0.4884910485933504 Recall: 0.764 F1 Score: 0.5959438377535101
+True Positive Rate: 0.764 False Positive Rate: 0.8
 
-using multiprocessing(CPU):
-This is not as good as using ThreadPoolExecutor(660s), but it is a simple way to determine number of workers
+25% 594s
+Accuracy: 0.442 Precision: 0.4343891402714932 Recall: 0.384 F1 Score: 0.40764331210191085
+True Positive Rate: 0.384 False Positive Rate: 0.5
 
-using multithreading:
-MAX_WORKERS = 4  652s
-MAX_WORKERS = 5  638s
-MAX_WORKERS = 6  642s
+Multiprocessing 664s
+
+Multithread worker=5 413s
+
+Dynamic multithread 457s
