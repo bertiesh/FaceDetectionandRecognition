@@ -20,3 +20,6 @@ run_server2.sh
 
 *.DS_Store
 
+facematch-env/
+LFWdataset/
+.env
