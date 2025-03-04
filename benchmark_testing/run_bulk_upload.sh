@@ -14,7 +14,7 @@ sleep 10
 start_time=$(date +%s)
 
 # Call client script to upload images from to database (the code currently only accepts one directory at a time)
-python ../src/Sample_Client/sample_bulk_upload_client.py --directory_paths "\\path\\to\\sample_database\\directory" --database_name "sample_db"
+python ../src/Sample_Client/sample_bulk_upload_client.py --directory_paths "../resources/LFWdataset/new_sample_database" --database_name "sample_db"
 
 # Sample directory path
 # "<path to dataset folder>\\LFWdataset\\sample_database"
@@ -30,4 +30,4 @@ echo "Server stopped"
 # Print total time taken
 echo "Total time taken: $total_time seconds"
 
-read -p "Press any key to exit..."
+#read -p "Press any key to exit..."
