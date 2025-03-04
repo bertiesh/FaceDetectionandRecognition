@@ -74,6 +74,13 @@ install the remaining dependencies:
 pip install -r mac_requirements.txt
 ```
 
+## Intel Mac x86_64 architecture specific user setup
+
+Currently it seems that for Macs with Intel CPUs, an older version of pytorch and torchvision are required. All previous MAC setup instructions can be followed, but the following must be done to ensure the correct versions of pytorch and torchvision:
+
+```
+conda install pytorch=2.1.2 torchvision=0.16.2 -c pytorch 
+```
 
 ---
 
