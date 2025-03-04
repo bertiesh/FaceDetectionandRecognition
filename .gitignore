@@ -10,7 +10,6 @@ __pycache__/
 venv/
 .env/
 .idea/
-facematch-env/
 
 # Ignore data folders
 resources/data/
@@ -21,7 +20,6 @@ run_server2.sh
 
 *.DS_Store
 
+facematch-env/
 LFWdataset/
 .env
-
-.DS_Store
