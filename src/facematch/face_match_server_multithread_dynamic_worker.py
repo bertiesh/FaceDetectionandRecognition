@@ -158,7 +158,7 @@ class DynamicWorkerPool:
                 pynvml.nvmlShutdown()
                 return utilization.gpu  # Return GPU utilization percentage
 
-        except (ImportError, Exception) as e:
+        except (ImportError, Exception):
             # GPU monitoring not available or failed
             pass
 
