@@ -4,12 +4,15 @@ import pandas as pd
 from sklearn.metrics import accuracy_score
 
 # Load the CSV file
-file_path = "../resources/LFWdataset/output.csv"  # Path to csv file containing top-n matches
+file_path = (
+    "../resources/LFWdataset/output.csv"  # Path to csv file containing top-n matches
+)
 
 # Sample csv path
 # file_path = "<path to dataset folder>\\LFWdataset\\output.csv"
 
 data = pd.read_csv(file_path)
+
 
 # Extract ground truth names (base names without numeric suffixes)
 # data["ground_truth"] = data["filename"].apply(
@@ -18,6 +21,8 @@ data = pd.read_csv(file_path)
 def extract_ground_truth(x):
     match = re.match(r"(.+?)_\d+\.jpg", x)
     return match.group(1) if match else None
+
+
 data["ground_truth"] = data["filename"].apply(extract_ground_truth)
 
 

@@ -6,7 +6,6 @@ from src.facematch.utils.resource_path import get_resource_path
 
 
 class TestBulkUpload(unittest.TestCase):
-
     def setUp(self):
         self.image_directory_path = get_resource_path("sample_images")
         self.database_path = get_resource_path("test_db.csv")

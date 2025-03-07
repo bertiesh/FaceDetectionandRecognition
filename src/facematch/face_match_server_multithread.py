@@ -6,16 +6,23 @@ import concurrent.futures
 from threading import Lock
 
 from flask_ml.flask_ml_server import MLServer, load_file_as_string
-from flask_ml.flask_ml_server.models import (BatchDirectoryInput,
-                                             BatchFileInput, BatchFileResponse,
-                                             EnumParameterDescriptor, EnumVal,
-                                             FileResponse,
-                                             FloatRangeDescriptor, InputSchema,
-                                             InputType, ParameterSchema,
-                                             RangedFloatParameterDescriptor,
-                                             ResponseBody, TaskSchema,
-                                             TextParameterDescriptor,
-                                             TextResponse)
+from flask_ml.flask_ml_server.models import (
+    BatchDirectoryInput,
+    BatchFileInput,
+    BatchFileResponse,
+    EnumParameterDescriptor,
+    EnumVal,
+    FileResponse,
+    FloatRangeDescriptor,
+    InputSchema,
+    InputType,
+    ParameterSchema,
+    RangedFloatParameterDescriptor,
+    ResponseBody,
+    TaskSchema,
+    TextParameterDescriptor,
+    TextResponse,
+)
 
 from src.facematch.interface import FaceMatchModel
 from src.facematch.utils.GPU import check_cuDNN_version
@@ -51,7 +58,7 @@ with open(config_path, "r") as config_file:
 
 default_threshold = config["cosine-threshold"]
 # Number of concurrent workers for processing face matches
-MAX_WORKERS = 5 
+MAX_WORKERS = 5
 # Adjust based on ArcFace + yolov8 threshold=0.48
 # MAX_WORKERS = 4  652s
 # MAX_WORKERS = 5  638s
@@ -111,16 +118,12 @@ class FindFaceParameters(TypedDict):
 
 # Function to process a single face match
 def process_face_match(
-    image_path: str, 
-    similarity_threshold: float, 
-    database_path: str
+    image_path: str, similarity_threshold: float, database_path: str
 ) -> Tuple[bool, Union[List[str], str]]:
     # Acquire lock when accessing the shared model (if necessary)
     with db_lock:
         return face_match_model.find_face(
-            image_path, 
-            similarity_threshold, 
-            database_path
+            image_path, similarity_threshold, database_path
         )
 
 
@@ -134,7 +137,6 @@ def process_face_match(
 def find_face_endpoint(
     inputs: FindFaceInputs, parameters: FindFaceParameters
 ) -> ResponseBody:
-
     # Get list of file paths from input
     input_file_paths = [item.path for item in inputs["image_paths"].files]
 
@@ -147,38 +149,45 @@ def find_face_endpoint(
     # Process multiple images in parallel using ThreadPoolExecutor
     all_results = []
     all_statuses = []
-    
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         # Create a list of futures for each image
         future_to_image = {
             executor.submit(
-                process_face_match, 
-                image_path, 
-                parameters["similarity_threshold"], 
-                database_path
-            ): image_path for image_path in input_file_paths
+                process_face_match,
+                image_path,
+                parameters["similarity_threshold"],
+                database_path,
+            ): image_path
+            for image_path in input_file_paths
         }
-        
+
         # Process results as they become available
         for future in concurrent.futures.as_completed(future_to_image):
             image_path = future_to_image[future]
             try:
                 status, results = future.result()
                 all_statuses.append(status)
-                
+
                 # Log results for debugging
                 log_info(f"Image {image_path}: {status}")
                 log_info(results)
-                
+
                 if status:
                     all_results.extend(results)
                 else:
                     # Return error message if any image processing fails
-                    return ResponseBody(root=TextResponse(value=f"Error processing {image_path}: {results}"))
-            
+                    return ResponseBody(
+                        root=TextResponse(
+                            value=f"Error processing {image_path}: {results}"
+                        )
+                    )
+
             except Exception as e:
                 log_info(f"Image {image_path} generated an exception: {e}")
-                return ResponseBody(root=TextResponse(value=f"Error processing {image_path}: {str(e)}"))
+                return ResponseBody(
+                    root=TextResponse(value=f"Error processing {image_path}: {str(e)}")
+                )
 
     # Create response object of images
     if not all_results:

@@ -65,7 +65,7 @@ def cosine_similarity_search_faiss(
     if threshold is not None:
         # Filter the DataFrame based on the threshold
         results = results[results["similarity"] >= threshold]
-    
+
     # sort results by similarity in descending order
     results = results.sort_values(by="similarity", ascending=False)
 

@@ -1,8 +1,13 @@
 import re
 import os
 import pandas as pd
-from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
-                             precision_score, recall_score)
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+)
 
 
 def calculate_tpr_fpr(true_labels, predicted_labels):
@@ -23,7 +28,9 @@ def calculate_tpr_fpr(true_labels, predicted_labels):
 
 
 # Load the CSV file
-file_path = "../resources/LFWdataset/output.csv"  # Path to csv file containing top-n matches
+file_path = (
+    "../resources/LFWdataset/output.csv"  # Path to csv file containing top-n matches
+)
 
 # Sample csv path
 # file_path = "<path to dataset folder>\\LFWdataset\\output.csv"
@@ -35,12 +42,15 @@ data["ground_truth"] = data["filename"].apply(
     lambda x: re.match(r"(.+?)_\d+\.jpg", x).group(1)
 )
 
+
 # data["ground_truth"] = data["filename"].apply(
 #     lambda x: re.match(r"(.+?)_\d+\.jpg", x).group(1)
 # )
 def extract_ground_truth(x):
     match = re.match(r"(.+?)_\d+\.jpg", x)
     return match.group(1) if match else None
+
+
 data["ground_truth"] = data["filename"].apply(extract_ground_truth)
 
 

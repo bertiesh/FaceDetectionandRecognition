@@ -3,11 +3,12 @@ import os
 
 from src.facematch.database_functions import upload_embedding_to_database
 from src.facematch.face_representation import detect_faces_and_get_embeddings
-from src.facematch.similarity_search import (cosine_similarity_search,
-                                             cosine_similarity_search_faiss)
+from src.facematch.similarity_search import (
+    cosine_similarity_search,
+    cosine_similarity_search_faiss,
+)
 from src.facematch.utils.logger import log_info
-from src.facematch.utils.resource_path import (get_config_path,
-                                               get_resource_path)
+from src.facematch.utils.resource_path import get_config_path, get_resource_path
 
 
 class FaceMatchModel:

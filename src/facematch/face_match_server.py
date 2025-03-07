@@ -4,16 +4,23 @@ from pathlib import Path
 from typing import List, TypedDict
 
 from flask_ml.flask_ml_server import MLServer, load_file_as_string
-from flask_ml.flask_ml_server.models import (BatchDirectoryInput,
-                                             BatchFileInput, BatchFileResponse,
-                                             EnumParameterDescriptor, EnumVal,
-                                             FileResponse,
-                                             FloatRangeDescriptor, InputSchema,
-                                             InputType, ParameterSchema,
-                                             RangedFloatParameterDescriptor,
-                                             ResponseBody, TaskSchema,
-                                             TextParameterDescriptor,
-                                             TextResponse)
+from flask_ml.flask_ml_server.models import (
+    BatchDirectoryInput,
+    BatchFileInput,
+    BatchFileResponse,
+    EnumParameterDescriptor,
+    EnumVal,
+    FileResponse,
+    FloatRangeDescriptor,
+    InputSchema,
+    InputType,
+    ParameterSchema,
+    RangedFloatParameterDescriptor,
+    ResponseBody,
+    TaskSchema,
+    TextParameterDescriptor,
+    TextResponse,
+)
 
 from src.facematch.interface import FaceMatchModel
 from src.facematch.utils.GPU import check_cuDNN_version
@@ -109,7 +116,6 @@ class FindFaceParameters(TypedDict):
 def find_face_endpoint(
     inputs: FindFaceInputs, parameters: FindFaceParameters
 ) -> ResponseBody:
-
     # Get list of file paths from input
     input_file_paths = [item.path for item in inputs["image_paths"].files]
 
