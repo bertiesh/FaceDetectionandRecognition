@@ -1,10 +1,10 @@
 import re
-
+import os
 import pandas as pd
 from sklearn.metrics import accuracy_score
 
 # Load the CSV file
-file_path = "path\\to\\output\\csv"  # Path to csv file containing top-n matches
+file_path = "../resources/LFWdataset/output.csv"  # Path to csv file containing top-n matches
 
 # Sample csv path
 # file_path = "<path to dataset folder>\\LFWdataset\\output.csv"
@@ -12,9 +12,13 @@ file_path = "path\\to\\output\\csv"  # Path to csv file containing top-n matches
 data = pd.read_csv(file_path)
 
 # Extract ground truth names (base names without numeric suffixes)
-data["ground_truth"] = data["filename"].apply(
-    lambda x: re.match(r"(.+?)_\d+\.jpg", x).group(1)
-)
+# data["ground_truth"] = data["filename"].apply(
+#     lambda x: re.match(r"(.+?)_\d+\.jpg", x).group(1)
+# )
+def extract_ground_truth(x):
+    match = re.match(r"(.+?)_\d+\.jpg", x)
+    return match.group(1) if match else None
+data["ground_truth"] = data["filename"].apply(extract_ground_truth)
 
 
 # Define a function to check if ground truth matches any predicted name
@@ -25,9 +29,15 @@ def check_match(row):
     # Split the result by spaces to get individual file names
     predicted_names = row["result"].split()
     # Extract base names from each filename
-    predicted_base_names = [
-        re.match(r"(.+?)_\d+\.jpg", name).group(1) for name in predicted_names
-    ]
+    # predicted_base_names = [
+    #     re.match(r"(.+?)_\d+\.jpg", name).group(1) for name in predicted_names
+    # ]
+    predicted_base_names = []
+    for name in predicted_names:
+        base_filename = os.path.basename(name.strip())
+        match = re.match(r"(.+?)_\d+\.jpg", base_filename)
+        if match:
+            predicted_base_names.append(match.group(1))
     # Check if ground_truth matches any of the base names
     return row["ground_truth"] in predicted_base_names
 

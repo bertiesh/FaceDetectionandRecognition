@@ -1,5 +1,14 @@
 #!/bin/bash
 
+if [ $# -ne 1 ]; then
+    echo -e "Expected 1 argument\n"
+    echo -e "Usage: ./run_bulk_upload.sh database_name\n"
+    read -p "Press any key to exit..."
+    exit 1
+fi
+
+source ../.env
+
 export PYTHONPATH=$(pwd)/..
 
 # Start the Python server in the background
@@ -14,7 +23,7 @@ sleep 10
 start_time=$(date +%s)
 
 # Call client script to upload images from to database (the code currently only accepts one directory at a time)
-python ../src/Sample_Client/sample_bulk_upload_client.py --directory_paths "\\path\\to\\sample_database\\directory" --database_name "sample_db"
+python ../src/Sample_Client/sample_bulk_upload_client.py --directory_paths "$DATABASE_DIRECTORY" --database_name "$1"
 
 # Sample directory path
 # "<path to dataset folder>\\LFWdataset\\sample_database"
@@ -30,4 +39,4 @@ echo "Server stopped"
 # Print total time taken
 echo "Total time taken: $total_time seconds"
 
-read -p "Press any key to exit..."
+#read -p "Press any key to exit..."

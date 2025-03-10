@@ -1,5 +1,5 @@
 import re
-
+import os
 import pandas as pd
 from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
                              precision_score, recall_score)
@@ -23,7 +23,7 @@ def calculate_tpr_fpr(true_labels, predicted_labels):
 
 
 # Load the CSV file
-file_path = "path\\to\\output\\csv"  # Path to csv file containing top-n matches
+file_path = "../resources/LFWdataset/output.csv"  # Path to csv file containing top-n matches
 
 # Sample csv path
 # file_path = "<path to dataset folder>\\LFWdataset\\output.csv"
@@ -31,12 +31,17 @@ file_path = "path\\to\\output\\csv"  # Path to csv file containing top-n matches
 data = pd.read_csv(file_path)
 
 # Extract ground truth names (base names without numeric suffixes)
-data["ground_truth"] = data["input_image"].apply(
+data["ground_truth"] = data["filename"].apply(
     lambda x: re.match(r"(.+?)_\d+\.jpg", x).group(1)
 )
 
-# Extract ground truth names by splitting on the underscore and taking the first part
-data["ground_truth"] = data["input_image"].apply(lambda x: x.split("_")[0])
+# data["ground_truth"] = data["filename"].apply(
+#     lambda x: re.match(r"(.+?)_\d+\.jpg", x).group(1)
+# )
+def extract_ground_truth(x):
+    match = re.match(r"(.+?)_\d+\.jpg", x)
+    return match.group(1) if match else None
+data["ground_truth"] = data["filename"].apply(extract_ground_truth)
 
 
 # Define a function to check if ground truth matches any predicted name
@@ -47,12 +52,18 @@ def check_match(row):
     # Split the result by spaces to get individual file names
     predicted_names = row["result"].split()
     # Extract base names from each filename
-    predicted_base_names = [
-        re.match(r"(.+?)_\d+\.jpg", name).group(1) for name in predicted_names
-    ]
+    # predicted_base_names = [
+    #     re.match(r"(.+?)_\d+\.jpg", name).group(1) for name in predicted_names
+    # ]
+    predicted_base_names = []
+    for name in predicted_names:
+        base_filename = os.path.basename(name.strip())
+        match = re.match(r"(.+?)_\d+\.jpg", base_filename)
+        if match:
+            predicted_base_names.append(match.group(1))
 
     # Extract base name from the input image
-    ground_truth = re.match(r"(.+?)_\d+\.jpg", row["input_image"]).group(1)
+    ground_truth = re.match(r"(.+?)_\d+\.jpg", row["filename"]).group(1)
 
     if not row["true_label"]:
         if len(predicted_base_names) > 0:
@@ -75,6 +86,7 @@ true_positive_rates = []
 
 data["predicted"] = data.apply(lambda row: check_match(row), axis=1)
 tpr, fpr = calculate_tpr_fpr(data["true_label"], data["predicted"])
+print(f"tpr: {tpr}, fpr:{fpr}")
 
 # Calculate metrics
 accuracy = accuracy_score(data["true_label"], data["predicted"])
