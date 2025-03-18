@@ -162,7 +162,7 @@ def process_retinaface_output(outputs, input_shape, original_shape, confidence_t
     
     # Apply NMS
     dets = np.hstack((boxes, scores[:, np.newaxis])).astype(np.float32, copy=False)
-    keep = py_cpu_nms(dets, 0.5)  # NMS threshold
+    keep = py_cpu_nms(dets, 0.7)  # NMS threshold
     
     # Keep top-K after NMS
     keep_top_k = 5
@@ -273,10 +273,10 @@ def detect_with_retinaface(image_path=None, img_rgb=None, model_path=None, confi
         
         # Apply NMS
         dets = np.hstack((boxes, scores[:, np.newaxis])).astype(np.float32, copy=False)
-        keep = py_cpu_nms(dets, 0.4)  # NMS threshold
+        keep = py_cpu_nms(dets, 0.7)  # NMS threshold
         
         # Keep top-K after NMS
-        keep_top_k = 5  # Reduced from 750 for efficiency
+        keep_top_k = 5
         if len(keep) > keep_top_k:
             keep = keep[:keep_top_k]
             

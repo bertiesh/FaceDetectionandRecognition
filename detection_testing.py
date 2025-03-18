@@ -9,7 +9,7 @@ image_path = "resources/sample_images/me.png"
 success, embeddings = detect_faces_and_get_embeddings(
     image_path,
     model_name="ArcFace",
-    detector_backend="retinaface",
+    detector_backend="yolov8",
     face_confidence_threshold=0.7,
     visualize=True
 )

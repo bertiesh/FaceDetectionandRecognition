@@ -60,7 +60,7 @@ def main():
                 
                 # 3. Create and draw landmark-based bounds
                 if landmark and len(landmark) >= 5:
-                    improved_box = create_face_bounds_from_landmarks(landmark, img.shape, margin_ratio=0.15)
+                    improved_box = create_face_bounds_from_landmarks(landmark, img.shape, margin_ratio=1.3)
                     if improved_box:
                         lx1, ly1, lx2, ly2 = improved_box
                         cv2.rectangle(viz_img, (lx1, ly1), (lx2, ly2), (0, 255, 0), 2)  # Green
@@ -73,7 +73,7 @@ def main():
                 
                 # 4. Extract face - use landmark-based box if available
                 if landmark and len(landmark) >= 5:
-                    improved_box = create_face_bounds_from_landmarks(landmark, img.shape, margin_ratio=.70)
+                    improved_box = create_face_bounds_from_landmarks(landmark, img.shape, margin_ratio=1.3)
                     if improved_box:
                         x1, y1, x2, y2 = improved_box
                 

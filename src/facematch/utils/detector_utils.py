@@ -73,10 +73,10 @@ def crop_face_for_embedding(face_img):
     h, w = face_img.shape[:2]
     
     # Calculate crop margins
-    top_margin = int(h * 0.1)      # 10% from top
-    bottom_margin = int(h * 0.15)  # 15% from bottom
-    left_margin = int(w * 0.1)     # 10% from left
-    right_margin = int(w * 0.1)    # 10% from right
+    top_margin = int(h * 0.05)      # 0% from top
+    bottom_margin = int(h * 0.15)  # 0% from bottom
+    left_margin = int(w * 0.05)     # 10% from left
+    right_margin = int(w * 0.05)    # 10% from right
     
     # Apply cropping
     y_start = top_margin
@@ -107,7 +107,7 @@ def process_yolov8_output(outputs, letterbox_info=None):
     confidence = output[4]  # Shape (8400,)
     
     # Get indices of potential faces (confidence above threshold)
-    threshold = 0.2  # Lower for testing
+    threshold = 0.5  # Lower for testing
     mask = confidence > threshold
     indices = np.nonzero(mask)[0]
     
@@ -473,7 +473,7 @@ def create_face_bounds_from_landmarks(landmarks, img_shape, margin_ratio=0.15):
     margin_y = height * margin_ratio
     
     # Add extra margin to top for forehead
-    top_margin = height * 0.80  # More margin at top for forehead
+    top_margin = height * 1.6  # More margin at top for forehead
     
     # Calculate box 
     x1 = max(0, left - margin_x)

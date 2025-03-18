@@ -90,7 +90,7 @@ def detect_faces_and_get_embeddings(
                     try:
                         # Use landmarks to create better bounding box if available
                         if landmark and len(landmark) >= 5:
-                            improved_box = create_face_bounds_from_landmarks(landmark, img.shape, margin_ratio=0.70)
+                            improved_box = create_face_bounds_from_landmarks(landmark, img.shape, margin_ratio=1.30)
                             if improved_box:
                                 x1, y1, x2, y2 = improved_box
                             else:
