@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import cv2
 from src.facematch.utils.retinaface_utils import detect_with_retinaface
-from src.facematch.utils.detector_utils import crop_face_for_embedding, create_face_bounds_from_landmarks, get_target_size, normalize_face, prepare_for_deepface
+from src.facematch.utils.detector_utils import crop_face_for_embedding, create_face_bounds_from_landmarks, get_target_size, normalize_face, prepare_for_deepface, create_square_bounds_from_landmarks
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     model_path = "/Users/davidthibodeau/Desktop/CS596E/group_proj/FaceDetectionandRecognition/src/facematch/models/retinaface-resnet50.onnx"
-    image_path = "resources/sample_images/me.png"
+    image_path = "resources/sample_images/single.jpg"
     
     if not os.path.exists(model_path):
         logger.error(f"Model not found: {model_path}")
@@ -60,7 +60,7 @@ def main():
                 
                 # 3. Create and draw landmark-based bounds
                 if landmark and len(landmark) >= 5:
-                    improved_box = create_face_bounds_from_landmarks(landmark, img.shape, margin_ratio=1.3)
+                    improved_box = create_square_bounds_from_landmarks(landmark, img.shape, scale_factor=4.0)
                     if improved_box:
                         lx1, ly1, lx2, ly2 = improved_box
                         cv2.rectangle(viz_img, (lx1, ly1), (lx2, ly2), (0, 255, 0), 2)  # Green
@@ -73,7 +73,7 @@ def main():
                 
                 # 4. Extract face - use landmark-based box if available
                 if landmark and len(landmark) >= 5:
-                    improved_box = create_face_bounds_from_landmarks(landmark, img.shape, margin_ratio=1.3)
+                    improved_box = create_square_bounds_from_landmarks(landmark, img.shape, scale_factor=4.0)
                     if improved_box:
                         x1, y1, x2, y2 = improved_box
                 

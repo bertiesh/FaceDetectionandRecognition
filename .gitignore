@@ -26,3 +26,4 @@ LFWdataset/
 /src/facematch/models/*
 /debug_detections
 /visualization
+debug_faces

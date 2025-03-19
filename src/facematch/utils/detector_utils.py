@@ -73,10 +73,10 @@ def crop_face_for_embedding(face_img):
     h, w = face_img.shape[:2]
     
     # Calculate crop margins
-    top_margin = int(h * 0.05)      # 0% from top
-    bottom_margin = int(h * 0.15)  # 0% from bottom
-    left_margin = int(w * 0.05)     # 10% from left
-    right_margin = int(w * 0.05)    # 10% from right
+    top_margin = int(h * 0.0)      # 0% from top
+    bottom_margin = int(h * 0.2)  # 0% from bottom
+    left_margin = int(w * 0.1)     # 10% from left
+    right_margin = int(w * 0.1)    # 10% from right
     
     # Apply cropping
     y_start = top_margin
@@ -616,3 +616,49 @@ def prepare_for_deepface(face, model_name, normalization):
         if face is not None:
             return face.astype(np.uint8)
         return None
+
+
+def create_square_bounds_from_landmarks(landmarks, img_shape, scale_factor=1.5):
+    """Create a square bounding box centered on facial landmarks.
+    
+    Args:
+        landmarks: List of facial landmarks points [(x1,y1), (x2,y2), ...]
+        img_shape: Original image shape (height, width)
+        scale_factor: Controls the size of the square (higher = larger box)
+    
+    Returns:
+        box: [x1, y1, x2, y2] coordinates for a square box
+    """
+    if not landmarks or len(landmarks) < 2:
+        return None
+    
+    # Find the center point (average of all landmarks)
+    center_x = sum(point[0] for point in landmarks) / len(landmarks)
+    center_y = sum(point[1] for point in landmarks) / len(landmarks)
+    
+    # Calculate the distances from center to each landmark
+    distances = [
+        max(abs(point[0] - center_x), abs(point[1] - center_y))
+        for point in landmarks
+    ]
+    
+    # Get the maximum distance (half the side of our containing square)
+    max_distance = max(distances)
+    
+    # Apply scale factor to control box size
+    side_half = max_distance * scale_factor
+    
+    # Create square box centered on landmarks
+    x1 = int(center_x - side_half)
+    y1 = int(center_y - side_half)
+    x2 = int(center_x + side_half)
+    y2 = int(center_y + side_half)
+    
+    # Ensure box is within image boundaries
+    height, width = img_shape[:2]
+    x1 = max(0, x1)
+    y1 = max(0, y1)
+    x2 = min(width, x2)
+    y2 = min(height, y2)
+    
+    return [x1, y1, x2, y2]
