@@ -1,5 +1,5 @@
 from deepface import DeepFace
-
+from src.facematch.hash import sha256_image
 
 # Function that takes in path to image and returns a status field and a list of face embeddings and corresponding
 # region for all faces in the image.
@@ -22,6 +22,7 @@ def detect_faces_and_get_embeddings(
                 continue
 
             embedding = result["embedding"]
+            
 
             x, y, width, height = (
                 result["facial_area"]["x"],
@@ -30,11 +31,17 @@ def detect_faces_and_get_embeddings(
                 result["facial_area"]["h"],
             )
 
+            bbox = [x, y, width, height]
+            
+            image = sha256_image(image_path, bbox)
+
             face_embeddings.append(
                 {
                     "image_path": image_path,
                     "embedding": embedding,
-                    "bbox": [x, y, width, height],
+                    "sha256_image": image,
+                    "model_name": model_name,
+                    "bbox": bbox,
                 }
             )
 

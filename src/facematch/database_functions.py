@@ -5,18 +5,26 @@ import pandas as pd
 
 from src.facematch.FAISS import add_embeddings_faiss_index
 
+import chromadb
+
+client = chromadb.HttpClient(host='localhost', port=8000)
 
 def upload_embedding_to_database(data, database_filepath):
-    csv_file = database_filepath
-    os.makedirs(os.path.dirname(csv_file), exist_ok=True)
     df = pd.DataFrame(data)
-    df["embedding"] = df["embedding"].apply(lambda x: ",".join(map(str, x)))
+    # df["embedding"] = df["embedding"].apply(lambda x: ",".join(map(str, x)))
     df["bbox"] = df["bbox"].apply(lambda x: ",".join(map(str, x)))
 
-    if os.path.exists(csv_file):
-        df.to_csv(csv_file, mode="a", index=False, header=False)
-    else:
-        df.to_csv(csv_file, index=False)
+    model_name = df["model_name"].iloc[0]
 
-    embeddings_array = np.array([d["embedding"] for d in data])
-    add_embeddings_faiss_index(embeddings_array, database_filepath)
+    # embeddings_array = np.array([d["embedding"] for d in data])
+    metadatas = [{"image_path":d["image_path"]} for d in data]
+
+    collection = client.get_or_create_collection(name=f"{model_name.lower()}_collection", metadata={
+        "image_path": "Original path of the uploaded image"
+    })
+
+    collection.add(
+        embeddings=list(df['embedding']),
+        metadatas=metadatas,
+        ids=list(df["sha256_image"]),
+    )
