@@ -1,7 +1,7 @@
 import json
 import os
 
-from src.facematch.database_functions import upload_embedding_to_database
+from src.facematch.database_functions import upload_embedding_to_database, query
 from src.facematch.face_representation import detect_faces_and_get_embeddings
 from src.facematch.similarity_search import (cosine_similarity_search,
                                              cosine_similarity_search_faiss)
@@ -110,15 +110,6 @@ class FaceMatchModel:
         self, image_file_path, threshold=None, database_path=None, toggle_faiss=True
     ):
         try:
-            # Get database from config file.
-            if database_path is None:
-                config_path = get_config_path("db_config.json")
-                with open(config_path, "r") as config_file:
-                    config = json.load(config_file)
-                database_path = get_resource_path(config["database_path"])
-            else:
-                database_path = get_resource_path(database_path)
-
             # Get models from config file.
             config_path = get_config_path("model_config.json")
             with open(config_path, "r") as config_file:
@@ -138,25 +129,25 @@ class FaceMatchModel:
                     face_confidence_threshold,
                 )
                 matching_image_paths = []
-
                 # If image has a valid face, perform similarity check
                 if status:
                     for embedding_output in embedding_outputs:
-                        if toggle_faiss:
-                            # Use Faiss
-                            output = cosine_similarity_search_faiss(
-                                embedding_output["embedding"],
-                                database_path,
-                                threshold=threshold,
-                            )
-                        else:
-                            # Use linear similarity search
-                            output = cosine_similarity_search(
-                                embedding_output["embedding"],
-                                database_path,
-                                threshold=threshold,
-                            )
-                        matching_image_paths.extend(output)
+                        output = query(embedding_output, n_results=10, threshold=threshold)
+                        # if toggle_faiss:
+                        #     # Use Faiss
+                        #     output = cosine_similarity_search_faiss(
+                        #         embedding_output["embedding"],
+                        #         database_path,
+                        #         threshold=threshold,
+                        #     )
+                        # else:
+                        #     # Use linear similarity search
+                        #     output = cosine_similarity_search(
+                        #         embedding_output["embedding"],
+                        #         database_path,
+                        #         threshold=threshold,
+                        #     )
+                    matching_image_paths.extend(output)
                     return True, matching_image_paths
                 else:
                     return False, "Error: Provided image does not have any face"

@@ -32,11 +32,11 @@ parser.add_argument(
 args = parser.parse_args()
 
 # Check if database exists
-if not os.path.exists(
-    get_resource_path(os.path.join("data", args.database_name + ".csv"))
-):
-    print("Database does not exist")
-    exit()
+# if not os.path.exists(
+#     get_resource_path(os.path.join("data", args.database_name + ".csv"))
+# ):
+#     print("Database does not exist")
+#     exit()
 
 # Set parameters and inputs for the request
 parameters = {
