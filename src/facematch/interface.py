@@ -3,25 +3,23 @@ import os
 
 from src.facematch.database_functions import upload_embedding_to_database, query
 from src.facematch.face_representation import detect_faces_and_get_embeddings
-from src.facematch.similarity_search import (cosine_similarity_search,
-                                             cosine_similarity_search_faiss)
+# from src.facematch.similarity_search import (cosine_similarity_search,
+#                                              cosine_similarity_search_faiss)
 from src.facematch.utils.logger import log_info
 from src.facematch.utils.resource_path import (get_config_path,
-                                               get_resource_path)
+                                               ) # get_resource_path
 
 
 class FaceMatchModel:
     # Function that takes in path to directory of images to upload to database and returns a success or failure message.
-    def bulk_upload(self, image_directory_path, database_path=None):
+    def bulk_upload(self, image_directory_path, collection_name=None):
         try:
             # Get database from config file.
-            if database_path is None:
+            if collection_name is None:
                 config_path = get_config_path("db_config.json")
                 with open(config_path, "r") as config_file:
                     config = json.load(config_file)
-                database_path = get_resource_path(config["database_path"])
-            else:
-                database_path = get_resource_path(database_path)
+                collection_name = config["collection_name"]
 
             # Get models from config file.
             config_path = get_config_path("model_config.json")
@@ -40,7 +38,7 @@ class FaceMatchModel:
             image_directory_path = os.path.abspath(image_directory_path)
             for root, dirs, files in os.walk(image_directory_path):
                 files.sort()
-                for filename in files:
+                for filename in files[0:500]:
                     image_path = os.path.join(root, filename)
                     if filename.lower().endswith(
                         (".png", ".jpg", ".jpeg", ".gif", ".bmp")
@@ -72,7 +70,7 @@ class FaceMatchModel:
 
                     # Upload every 1000 files into database for more efficiency and security.
                     if total_files_uploaded % 1000 == 0 and total_files_uploaded != 0:
-                        upload_embedding_to_database(embedding_outputs, database_path)
+                        upload_embedding_to_database(embedding_outputs, collection_name)
                         embedding_outputs = []
                         log_info(
                             "Successfully uploaded "
@@ -80,18 +78,18 @@ class FaceMatchModel:
                             + " / "
                             + str(total_files_read)
                             + " files to "
-                            + database_path
+                            + collection_name
                         )
 
             if len(embedding_outputs) != 0:
-                upload_embedding_to_database(embedding_outputs, database_path)
+                upload_embedding_to_database(embedding_outputs, collection_name)
                 log_info(
                     "Successfully uploaded "
                     + str(total_files_uploaded)
                     + " / "
                     + str(total_files_read)
                     + " files to "
-                    + database_path
+                    + collection_name
                 )
 
             return (
@@ -100,14 +98,14 @@ class FaceMatchModel:
                 + " / "
                 + str(total_files_read)
                 + " files to "
-                + database_path
+                + collection_name
             )
         except Exception as e:
             return f"An error occurred: {str(e)}"
 
     # Function that takes in path to image and returns all images that have the same person.
     def find_face(
-        self, image_file_path, threshold=None, database_path=None, toggle_faiss=True
+        self, image_file_path, threshold=None, collection_name=None, toggle_faiss=True
     ):
         try:
             # Get models from config file.
@@ -132,7 +130,7 @@ class FaceMatchModel:
                 # If image has a valid face, perform similarity check
                 if status:
                     for embedding_output in embedding_outputs:
-                        output = query(embedding_output, n_results=10, threshold=threshold)
+                        output = query(collection_name, embedding_output, n_results=10, threshold=threshold)
                         # if toggle_faiss:
                         #     # Use Faiss
                         #     output = cosine_similarity_search_faiss(

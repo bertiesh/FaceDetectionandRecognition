@@ -38,7 +38,7 @@ for file in "$input_directory"/*; do
     # Get the filename
     filename=$(basename "$file")
     # Call the Python script and capture its output
-    result=$(python ../src/Sample_Client/sample_find_face_client.py --file_paths "$file" --similarity_threshold $similarity_threshold --database_name "sample_db" | grep -v "Matches found" | tr '\n' ' ')
+    result=$(python ../src/Sample_Client/sample_find_face_client.py --file_paths "$file" --similarity_threshold $similarity_threshold --collection_name "sample" | grep -v "Matches found" | tr '\n' ' ')
     # Append the filename and result as a new row in the CSV file
     echo "$filename,$result" >> "$output_csv"
   fi
