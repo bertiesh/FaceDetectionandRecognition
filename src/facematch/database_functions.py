@@ -8,7 +8,7 @@ import chromadb
 client = chromadb.HttpClient(host='localhost', port=8000)
 
 def get_collection(collection, model_name, client):
-    return client.get_or_create_collection(name=f"{collection}_{model_name.lower()}_collection", metadata={
+    return client.get_or_create_collection(name=f"{collection}_{model_name.lower()}", metadata={
         "image_path": "Original path of the uploaded image",
         "hnsw:space": "l2",
     })
