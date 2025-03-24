@@ -18,21 +18,21 @@ if [ -f "../resources/LFWdataset/output.csv" ]; then
   rm "../resources/LFWdataset/output.csv"
 fi
 
-# Delete sample_db.csv and sample_db.bin if they exist
-if [ -f "../resources/data/sample_db.csv" ]; then
-  echo "Deleting ../resources/data/sample_db.csv"
-  rm "../resources/data/sample_db.csv"
-fi
+# # Delete sample_db.csv and sample_db.bin if they exist
+# if [ -f "../resources/data/sample_db.csv" ]; then
+#   echo "Deleting ../resources/data/sample_db.csv"
+#   rm "../resources/data/sample_db.csv"
+# fi
 
-if [ -f "../resources/data/sample_db.bin" ]; then
-  echo "Deleting ../resources/data/sample_db.bin"
-  rm "../resources/data/sample_db.bin"
-fi
+# if [ -f "../resources/data/sample_db.bin" ]; then
+#   echo "Deleting ../resources/data/sample_db.bin"
+#   rm "../resources/data/sample_db.bin"
+# fi
 
-# Run the required scripts without waiting for key presses
-echo "Running bulk upload script..."
-# Use modified run_bulk_upload_auto.sh script (see below)
-./run_bulk_upload.sh $database_name
+# # Run the required scripts without waiting for key presses
+# echo "Running bulk upload script..."
+# # Use modified run_bulk_upload_auto.sh script (see below)
+# ./run_bulk_upload.sh $database_name
 
 echo "Running face find accuracy script..."
 # Pass the similarity threshold to the run_face_find_accuracy.sh script
