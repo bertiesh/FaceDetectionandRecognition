@@ -6,3 +6,5 @@ black
 isort
 ruff
 ultralytics
+onnxruntime
+opencv-contrib-python
