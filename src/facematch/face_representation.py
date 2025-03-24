@@ -17,11 +17,15 @@ from src.facematch.utils.detector_utils import (get_target_size,
                                                 create_face_bounds_from_landmarks,
                                                 align_face,
                                                 normalize_face,
-                                                prepare_for_deepface,
+                                                prepare_for_embedding,
                                                 visualize_detections,
                                                 create_square_bounds_from_landmarks)
 
 from src.facematch.utils.retinaface_utils import detect_with_retinaface
+
+from src.facematch.utils.embedding_utils import get_arcface_embedding
+
+
 
 def detect_faces_and_get_embeddings(
     image_path, 
@@ -46,6 +50,9 @@ def detect_faces_and_get_embeddings(
         detector_onnx_path = os.path.join(models_dir, "yolov9.onnx")
     elif detector_backend == "retinaface":
         detector_onnx_path = os.path.join(models_dir, "retinaface-resnet50.onnx")
+
+    if model_name == "ArcFace":
+        model_onnx_path = os.path.join(models_dir, "arcface_model_new.onnx")
         
     if visualize:
         os.makedirs("debug_detections", exist_ok=True)
@@ -140,7 +147,7 @@ def detect_faces_and_get_embeddings(
                         if face_normalized is None:
                             continue
                             
-                        detection = prepare_for_deepface(face_normalized, model_name, normalization)
+                        detection = prepare_for_embedding(face_normalized, model_name, normalization)
                         if detection is None:
                             continue
                             
@@ -152,18 +159,21 @@ def detect_faces_and_get_embeddings(
                             if isinstance(detection, np.ndarray):
                                 cv2.imwrite(face_path, cv2.cvtColor(detection, cv2.COLOR_RGB2BGR))
                         
-                        # Generate embedding
-                        embedding_results = DeepFace.represent(
-                            img_path=detection,
-                            model_name=model_name,
-                            detector_backend='skip',
-                            enforce_detection=False,
-                            align=False,
-                            normalization="base"
-                        )
+                        # # Generate embedding
+                        # embedding_results = DeepFace.represent(
+                        #     img_path=detection,
+                        #     model_name=model_name,
+                        #     detector_backend='skip',
+                        #     enforce_detection=False,
+                        #     align=False,
+                        #     normalization="base"
+                        # )
+
+                        embedding = get_arcface_embedding(detection, model_onnx_path)
                         
-                        if embedding_results:
-                            embedding = embedding_results[0]["embedding"]
+                        if embedding is not None:
+                        #if embedding_results:
+                            #embedding = embedding_results[0]["embedding"]
                             face_embeddings.append({
                                 "image_path": path_str,
                                 "embedding": embedding,
@@ -282,7 +292,7 @@ def detect_faces_and_get_embeddings(
             if face_normalized is None:
                 continue
                 
-            detection = prepare_for_deepface(face_normalized, model_name, normalization)
+            detection = prepare_for_embedding(face_normalized, model_name, normalization)
             if detection is None:
                 continue
 

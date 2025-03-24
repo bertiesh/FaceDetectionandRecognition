@@ -577,9 +577,9 @@ def normalize_face(face, target_size, model_name, normalization=True):
     return face_normalized
 
 
-def prepare_for_deepface(face, model_name, normalization):
+def prepare_for_embedding(face, model_name, normalization):
     """
-    Final preparation to make the face compatible with DeepFace's expectations
+    Final preparation to make the face compatible with embedding model's expectations
     """
     # DeepFace's models generally expect uint8 input (0-255)
     # If we've normalized, we need to convert back

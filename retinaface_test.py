@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import cv2
 from src.facematch.utils.retinaface_utils import detect_with_retinaface
-from src.facematch.utils.detector_utils import crop_face_for_embedding, create_face_bounds_from_landmarks, get_target_size, normalize_face, prepare_for_deepface, create_square_bounds_from_landmarks
+from src.facematch.utils.detector_utils import crop_face_for_embedding, create_face_bounds_from_landmarks, get_target_size, normalize_face, prepare_for_embedding, create_square_bounds_from_landmarks
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -93,7 +93,7 @@ def main():
                 normalized_face = normalize_face(cropped_face, target_size, model_name, True)
                 
                 # 7. Prepare for DeepFace
-                final_face = prepare_for_deepface(normalized_face, model_name, True)
+                final_face = prepare_for_embedding(normalized_face, model_name, True)
                 final_path = os.path.join(viz_dir, f"{os.path.basename(image_path)}_step4_final_face{i}.jpg")
                 cv2.imwrite(final_path, cv2.cvtColor(final_face, cv2.COLOR_RGB2BGR))
                 
