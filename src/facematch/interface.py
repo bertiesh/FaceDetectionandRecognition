@@ -129,8 +129,8 @@ class FaceMatchModel:
                 matching_image_paths = []
                 # If image has a valid face, perform similarity check
                 if status:
-                    for embedding_output in embedding_outputs:
-                        output = query(collection_name, embedding_output, n_results=10, threshold=threshold)
+                    output = query(collection_name, embedding_outputs, n_results=10, threshold=threshold)
+                    # for embedding_output in embedding_outputs:
                         # if toggle_faiss:
                         #     # Use Faiss
                         #     output = cosine_similarity_search_faiss(

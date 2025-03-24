@@ -23,3 +23,5 @@ run_server2.sh
 facematch-env/
 LFWdataset/
 .env
+
+chroma.log

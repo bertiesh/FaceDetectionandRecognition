@@ -1,7 +1,4 @@
-import numpy as np
 import pandas as pd
-
-from sklearn.metrics.pairwise import cosine_similarity
 
 import chromadb
 
@@ -10,7 +7,7 @@ client = chromadb.HttpClient(host='localhost', port=8000)
 def get_collection(collection, model_name, client):
     return client.get_or_create_collection(name=f"{collection}_{model_name.lower()}", metadata={
         "image_path": "Original path of the uploaded image",
-        "hnsw:space": "l2",
+        "hnsw:space": "cosine",
     })
 
 def upload_embedding_to_database(data, collection):
@@ -30,30 +27,41 @@ def upload_embedding_to_database(data, collection):
     )
 
 def query(collection, data, n_results, threshold):
-    query_vector = np.array(data["embedding"])
-    collection = get_collection(collection, data["model_name"], client)
-
+    query_vectors = [image["embedding"] for image in data]
+    collection = get_collection(collection, data[0]["model_name"], client)
+    
     result = collection.query(
-        query_embeddings=[query_vector],
+        query_embeddings=query_vectors,
         n_results=n_results,
         include=["metadatas", "distances", "embeddings"]
     )
 
-    paths = list(map(lambda x: x["image_path"],result["metadatas"][0]))
-    results = pd.DataFrame({"embedding":list(result["embeddings"][0]), "distance":result["distances"][0], "img_path":paths})
+    # Flatten results and include index
+    data = []
+    for idx, (ids, distances, embeddings, metadatas) in enumerate(zip(result["ids"], result["distances"], result["embeddings"], result["metadatas"])):
+        for (image_id, distance, embedding, metadata) in zip(ids, distances, embeddings, metadatas):
+            data.append({
+                "query_index": idx,  # Index of the original face in the query
+                "id": image_id,
+                "distance": distance,
+                "embedding": embedding.tolist(),
+                "img_path": metadata["image_path"]
+            })
 
+    # Convert to DataFrame
+    result_df = pd.DataFrame(data)
+        
+    result_df["similarity"] = 1 - result_df["distance"]
 
-    get_similarity = lambda query_vector: lambda x: cosine_similarity(x.reshape(1, -1), query_vector.reshape(1, -1))[0][0]
-
-    results["similarity"] = results["embedding"].apply(get_similarity(query_vector))
+    
 
     if threshold is not None:
         # Filter the DataFrame based on the threshold
-        results = results[results["similarity"] >= threshold]
+        result_df = result_df[result_df["similarity"] >= threshold]
     
     # sort results by similarity in descending order
-    results = results.sort_values(by="similarity", ascending=False)
+    result_df = result_df.sort_values(by=["query_index", "similarity"], ascending=[True, False])
 
-    top_img_paths = results["img_path"].to_list()
+    top_img_paths = result_df["img_path"].to_list()
 
     return top_img_paths
