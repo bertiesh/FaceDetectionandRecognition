@@ -53,7 +53,7 @@ class FaceMatchModel:
                             image_path,
                             model_name,
                             detector_backend,
-                            face_confidence_threshold
+                            face_confidence_threshold,
                         )
                         if status:
                             total_files_uploaded += 1
