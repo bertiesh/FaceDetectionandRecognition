@@ -53,8 +53,7 @@ class FaceMatchModel:
                             image_path,
                             model_name,
                             detector_backend,
-                            face_confidence_threshold=face_confidence_threshold,
-                            input_size=(640, 640)
+                            face_confidence_threshold
                         )
                         if status:
                             total_files_uploaded += 1
@@ -136,7 +135,7 @@ class FaceMatchModel:
                     image_file_path,
                     model_name,
                     detector_backend,
-                    face_confidence_threshold=face_confidence_threshold,
+                    face_confidence_threshold,
                 )
                 matching_image_paths = []
 
