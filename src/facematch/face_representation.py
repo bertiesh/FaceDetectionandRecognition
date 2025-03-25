@@ -2,28 +2,15 @@ import os
 import cv2
 import numpy as np
 import onnxruntime as ort
-from deepface import DeepFace
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-from src.facematch.utils.detector_utils import (get_target_size,
-                                                crop_face_for_embedding,
-                                                process_yolov8_output,
-                                                process_yolov9_output,
-                                                process_yolo11_output,
-                                                extract_face,
-                                                create_face_bounds_from_landmarks,
-                                                align_face,
-                                                normalize_face,
-                                                prepare_for_embedding,
-                                                visualize_detections,
-                                                create_square_bounds_from_landmarks)
+from src.facematch.utils.yolo_utils import (get_target_size, process_yolov8_output,
+                                            process_yolov9_output, process_yolo11_output, visualize_detections, process_yolo_detections)
 
-from src.facematch.utils.retinaface_utils import detect_with_retinaface
-
-from src.facematch.utils.embedding_utils import get_arcface_embedding
+from src.facematch.utils.retinaface_utils import (detect_with_retinaface, process_retinaface_detections)
 
 
 
@@ -36,7 +23,8 @@ def detect_faces_and_get_embeddings(
     align=True,
     normalization=True,
     input_size=(640, 640),
-    visualize=False
+    visualize=False,
+    height_factor=1.5
 ):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     models_dir = os.path.join(script_dir, "models")
@@ -80,10 +68,9 @@ def detect_faces_and_get_embeddings(
         target_size = get_target_size(model_name)
         original_size = (img.shape[1], img.shape[0])
         
-        # Special handling for RetinaFace
+        # Special handling for RetinaFace - UNTOUCHED
         if detector_backend == "retinaface":
             try:
-                
                 boxes, scores, landmarks = detect_with_retinaface(
                     image_path=image_path if isinstance(image_path, str) else None,
                     img_rgb=img if not isinstance(image_path, str) else None,
@@ -92,98 +79,7 @@ def detect_faces_and_get_embeddings(
                     visualize=visualize
                 )
                 
-                face_embeddings = []
-                
-                for i, (box, score, landmark) in enumerate(zip(boxes, scores, landmarks)):
-                    try:
-                        # Use landmarks to create better bounding box if available
-                        if landmark and len(landmark) >= 5:
-                            improved_box = create_square_bounds_from_landmarks(landmark, img.shape, scale_factor=4.0)
-                            if improved_box:
-                                x1, y1, x2, y2 = improved_box
-                            else:
-                                x1, y1, x2, y2 = map(int, box)
-                        else:
-                            x1, y1, x2, y2 = map(int, box)
-                        
-                        # Ensure coordinates are valid
-                        x1 = max(0, x1)
-                        y1 = max(0, y1)
-                        x2 = min(img.shape[1], x2)
-                        y2 = min(img.shape[0], y2)
-                        
-                        if x2 <= x1 or y2 <= y1:
-                            continue
-                        
-                        # Extract face
-                        face = img[y1:y2, x1:x2].copy()
-                        
-                        # Create region info
-                        region = {
-                            "x": x1,
-                            "y": y1,
-                            "w": x2 - x1,
-                            "h": y2 - y1,
-                            "confidence": float(score)
-                        }
-                        
-                        # Set landmarks for alignment
-                        if landmark and len(landmark) >= 2:
-                            region["left_eye"] = tuple(map(int, landmark[0]))
-                            region["right_eye"] = tuple(map(int, landmark[1]))
-                        else:
-                            region["left_eye"] = None
-                            region["right_eye"] = None
-                        
-                        # Align face using landmarks
-                        if align and region["left_eye"] is not None and region["right_eye"] is not None:
-                            aligned_face = align_face(face, img, region)
-                            if aligned_face is not None and aligned_face.size > 0:
-                                face = aligned_face
-                        
-                        # Crop and normalize
-                        face = crop_face_for_embedding(face)
-                        face_normalized = normalize_face(face, target_size, model_name, normalization)
-                        if face_normalized is None:
-                            continue
-                            
-                        detection = prepare_for_embedding(face_normalized, model_name, normalization)
-                        if detection is None:
-                            continue
-                            
-                        # Visualize processed face
-                        if visualize and isinstance(image_path, str):
-                            debug_dir = "debug_faces"
-                            os.makedirs(debug_dir, exist_ok=True)
-                            face_path = os.path.join(debug_dir, f"{os.path.basename(image_path)}_face_{i}.jpg")
-                            if isinstance(detection, np.ndarray):
-                                cv2.imwrite(face_path, cv2.cvtColor(detection, cv2.COLOR_RGB2BGR))
-                        
-                        # # Generate embedding
-                        # embedding_results = DeepFace.represent(
-                        #     img_path=detection,
-                        #     model_name=model_name,
-                        #     detector_backend='skip',
-                        #     enforce_detection=False,
-                        #     align=False,
-                        #     normalization="base"
-                        # )
-
-                        embedding = get_arcface_embedding(detection, model_onnx_path)
-                        
-                        if embedding is not None:
-                        #if embedding_results:
-                            #embedding = embedding_results[0]["embedding"]
-                            face_embeddings.append({
-                                "image_path": path_str,
-                                "embedding": embedding,
-                                "bbox": [region["x"], region["y"], region["w"], region["h"]],
-                                "confidence": region["confidence"]
-                            })
-                    
-                    except Exception as e:
-                        logger.error(f"Error processing face {i}: {str(e)}")
-                        continue
+                face_embeddings = process_retinaface_detections(img, align, target_size, normalization, visualize, image_path, model_name, model_onnx_path, path_str, boxes, scores, landmarks)
                 
                 if len(face_embeddings) > 0:
                     return True, face_embeddings
@@ -209,11 +105,7 @@ def detect_faces_and_get_embeddings(
         elif 'MetalPerformanceShadersExecutionProvider' in available_providers:
             providers.insert(0, 'MetalPerformanceShadersExecutionProvider')
                 
-        detector_session = ort.InferenceSession(
-            detector_onnx_path, 
-            sess_options=session_options,
-            providers=providers
-        )
+        detector_session = ort.InferenceSession(detector_onnx_path, sess_options=session_options, providers=providers)
         
         model_inputs = detector_session.get_inputs()
         input_name = model_inputs[0].name
@@ -227,12 +119,7 @@ def detect_faces_and_get_embeddings(
             pad_w = (input_size[0] - new_w) // 2
             pad_h = (input_size[1] - new_h) // 2
             
-            letterbox_info = {
-                "scale": scale,
-                "pad_w": pad_w,
-                "pad_h": pad_h,
-                "orig_size": original_size
-            }
+            letterbox_info = {"scale": scale, "pad_w": pad_w, "pad_h": pad_h, "orig_size": original_size}
         
             img_resized = cv2.resize(img, (new_w, new_h))
             letterbox_img = np.zeros((input_size[1], input_size[0], 3), dtype=np.uint8)
@@ -243,94 +130,26 @@ def detect_faces_and_get_embeddings(
             outputs = detector_session.run(None, {input_name: img_input})
             
             if detector_backend == 'yolov8':
-                boxes, scores, landmarks = process_yolov8_output(outputs, letterbox_info)
+                # Use the modified process_yolov8_output that creates square boxes
+                boxes, scores, landmarks = process_yolov8_output(outputs, letterbox_info, height_factor)
             elif detector_backend == "yolov9":
                 boxes, scores, landmarks = process_yolov9_output(outputs, letterbox_info)
             elif detector_backend == "yolo11":
                 boxes, scores, landmarks = process_yolo11_output(outputs, letterbox_info)
 
-        # Visualize detections
-        if visualize and isinstance(image_path, str) and len(boxes) > 0:
-            debug_dir = "debug_detections"
-            os.makedirs(debug_dir, exist_ok=True)
-            vis_path = os.path.join(debug_dir, os.path.basename(image_path) + "_detect.jpg")
-            visualize_detections(img, boxes, scores, landmarks, save_path=vis_path)
-        
-        # Handle no detections
-        if len(boxes) == 0:
-            return False, []
-            
-        # Count valid detections
-        valid_faces = sum(1 for score in scores if score >= face_confidence_threshold)
-        if valid_faces == 0:
-            return False, []
-            
-        # Process each detected face
-        face_embeddings = []
-        
-        for i, (box, score) in enumerate(zip(boxes, scores)):
-            if score < face_confidence_threshold:
-                continue
-                
-            landmark = landmarks[i] if landmarks and i < len(landmarks) else None
-            
-            # Extract face region
-            face, region = extract_face(img, box, landmark, detector_backend)
-            
-            if face is None or face.size == 0:
-                continue
-            
-            region["confidence"] = float(score)
-            
-            # Align face if landmarks available
-            if align and region["left_eye"] is not None and region["right_eye"] is not None:
-                face = align_face(face, img, region)
-            
-            # Process for embedding
-            face = crop_face_for_embedding(face)
-            face_normalized = normalize_face(face, target_size, model_name, normalization)
-            if face_normalized is None:
-                continue
-                
-            detection = prepare_for_embedding(face_normalized, model_name, normalization)
-            if detection is None:
-                continue
-
-            # Visualize processed faces
-            if visualize and isinstance(image_path, str):
-                debug_dir = "debug_faces"
+            # Visualize detections
+            if visualize and isinstance(image_path, str) and len(boxes) > 0:
+                debug_dir = "debug_detections"
                 os.makedirs(debug_dir, exist_ok=True)
-                face_path = os.path.join(debug_dir, f"{os.path.basename(image_path)}_face_{i}.jpg")
-                if isinstance(detection, np.ndarray):
-                    cv2.imwrite(face_path, cv2.cvtColor(detection, cv2.COLOR_RGB2BGR))
+                vis_path = os.path.join(debug_dir, os.path.basename(image_path) + "_detect.jpg")
+                visualize_detections(img, boxes, scores, landmarks, save_path=vis_path)
             
-            # Generate embedding
-            try:
-                embedding_results = DeepFace.represent(
-                    img_path=detection,
-                    model_name=model_name,
-                    detector_backend='skip',
-                    enforce_detection=False,
-                    align=False,
-                    normalization="base"
-                )
-                
-                if embedding_results:
-                    embedding = embedding_results[0]["embedding"]
-                    face_embeddings.append({
-                        "image_path": path_str,
-                        "embedding": embedding,
-                        "bbox": [region["x"], region["y"], region["w"], region["h"]],
-                        "confidence": region["confidence"]
-                    })
-            except Exception as e:
-                logger.error(f"Error getting embedding for face {i}: {str(e)}")
-                continue
-        
-        if len(face_embeddings) == 0:
+            # Process detections and get embeddings
+            face_embeddings = process_yolo_detections(img, boxes, scores, landmarks, align, target_size, normalization, visualize, image_path, model_name, model_onnx_path, path_str, face_confidence_threshold, detector_backend)
+            
+            if len(face_embeddings) > 0:
+                return True, face_embeddings
             return False, []
-            
-        return True, face_embeddings
         
     except Exception as e:
         logger.error(f"Error in detect_faces_and_get_embeddings: {str(e)}")

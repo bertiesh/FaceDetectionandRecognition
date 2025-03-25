@@ -4,6 +4,8 @@ import logging
 import os
 import onnxruntime as ort
 
+from src.facematch.utils.embedding_utils import get_arcface_embedding
+
 logger = logging.getLogger(__name__)
 
 class PriorBox:
@@ -30,17 +32,10 @@ class PriorBox:
                         cy = (i + 0.5) * self.steps[k] / self.image_size[0]
                         anchors.append([cx, cy, s_kx, s_ky])
         
-        if self.format == "torch":
-            import torch
-            output = torch.Tensor(anchors)
-        else:
-            output = np.array(anchors)
+        output = np.array(anchors)
             
         if self.clip:
-            if self.format == "torch":
-                output.clamp_(max=1, min=0)
-            else:
-                output = np.clip(output, 0, 1)
+            output = np.clip(output, 0, 1)
                 
         return output
 
@@ -339,3 +334,260 @@ def detect_with_retinaface(image_path=None, img_rgb=None, model_path=None, confi
             logger.error(f"Error creating visualization: {e}")
     
     return result_boxes, result_scores, result_landmarks
+
+def crop_face_for_embedding(face_img):
+   
+    if face_img is None or face_img.size == 0:
+        return None
+        
+    h, w = face_img.shape[:2]
+    
+    # Calculate crop margins
+    top_margin = int(h * 0.0)      # 0% from top
+    bottom_margin = int(h * 0.2)  # 0% from bottom
+    left_margin = int(w * 0.1)     # 10% from left
+    right_margin = int(w * 0.1)    # 10% from right
+    
+    # Apply cropping
+    y_start = top_margin
+    y_end = h - bottom_margin
+    x_start = left_margin
+    x_end = w - right_margin
+    
+    # Ensure valid dimensions
+    if y_end <= y_start or x_end <= x_start:
+        return face_img
+    
+    cropped_face = face_img[y_start:y_end, x_start:x_end]
+    
+    return cropped_face
+
+def align_face(face, img, region):
+    """Align face based on eye positions"""
+    if region["left_eye"] is None or region["right_eye"] is None:
+        return face
+    
+    left_eye = region["left_eye"]
+    right_eye = region["right_eye"]
+    
+    # Calculate angle for alignment
+    dx = right_eye[0] - left_eye[0]
+    dy = right_eye[1] - left_eye[1]
+    angle = np.degrees(np.arctan2(dy, dx))
+    
+    # Calculate desired eye position based on face dimensions
+    face_width, face_height = region["w"], region["h"]
+    desired_left_eye_x = 0.35  # Proportion from the left edge
+    desired_right_eye_x = 1.0 - desired_left_eye_x
+    
+    desired_eye_y = 0.4  # Proportion from the top edge
+    
+    desired_dist = (desired_right_eye_x - desired_left_eye_x) * face_width
+    actual_dist = np.sqrt((dx ** 2) + (dy ** 2))
+    scale = desired_dist / actual_dist
+    
+    # Calculate rotation center (between the eyes)
+    eye_center = ((left_eye[0] + right_eye[0]) // 2, (left_eye[1] + right_eye[1]) // 2)
+    
+    # Get rotation matrix
+    rotation_matrix = cv2.getRotationMatrix2D(eye_center, angle, scale)
+    
+    # Update translation component of the matrix
+    rotation_matrix[0, 2] += (face_width * 0.5) - eye_center[0]
+    rotation_matrix[1, 2] += (face_height * desired_eye_y) - eye_center[1]
+    
+    # Apply affine transformation to the original image
+    output_size = (face_width, face_height)
+    aligned_face = cv2.warpAffine(
+        img, rotation_matrix, output_size,
+        flags=cv2.INTER_CUBIC
+    )
+    
+    y_min = max(0, region["y"] - int(face_height * 0.1))
+    y_max = min(img.shape[0], region["y"] + region["h"] + int(face_height * 0.1))
+    x_min = max(0, region["x"] - int(face_width * 0.1))
+    x_max = min(img.shape[1], region["x"] + region["w"] + int(face_width * 0.1))
+    
+    aligned_face = aligned_face[y_min:y_max, x_min:x_max]
+    
+    return aligned_face
+
+
+def normalize_face(face, target_size, model_name, normalization=True):
+    """Normalize face for the embedding model"""
+    
+    if face is None or face.size == 0:
+        logger.warning("Empty face provided to normalize_face")
+        return None
+        
+    if not normalization:
+        return face
+    
+    # Resize to target dimensions required by the embedding model
+    face_resized = cv2.resize(face, target_size)
+    
+    # Convert to the expected format based on embedding model    
+    if model_name == "Facenet512":
+        face_normalized = face_resized.astype(np.float32)
+        face_normalized = (face_normalized - 127.5) / 128.0
+        
+    elif model_name in ["ArcFace", "SFace"]:
+        face_normalized = face_resized.astype(np.float32)
+        face_normalized = face_normalized / 255.0
+        mean = np.array([0.5, 0.5, 0.5])
+        std = np.array([0.5, 0.5, 0.5])
+        face_normalized = (face_normalized - mean) / std
+        
+    else:
+        face_normalized = face_resized.astype(np.float32) / 255.0
+    
+    return face_normalized
+
+def prepare_for_embedding(face, model_name, normalization):
+    """Final preparation to make the face compatible with embedding model's expectations"""
+    # If we've normalized, we need to convert back
+    if normalization and face is not None:
+        # Special handling for different models
+        if model_name == "Facenet512":
+            # For FaceNet, revert normalization
+            face_uint8 = ((face * 128.0) + 127.5).astype(np.uint8)
+            return face_uint8
+        
+        elif model_name in ["ArcFace", "SFace"]:
+            # For ArcFace/SFace, revert normalization
+            mean = np.array([0.5, 0.5, 0.5])
+            std = np.array([0.5, 0.5, 0.5])
+            face_uint8 = ((face * std) + mean) * 255
+            face_uint8 = np.clip(face_uint8, 0, 255).astype(np.uint8)
+            return face_uint8
+        
+        else:
+            # Default reversion
+            face_uint8 = (face * 255).astype(np.uint8)
+            return face_uint8
+    else:
+        if face is not None:
+            return face.astype(np.uint8)
+        return None
+
+
+def create_square_bounds_from_landmarks(landmarks, img_shape, scale_factor=1.5):
+    """Create a square bounding box centered on facial landmarks."""
+    if not landmarks or len(landmarks) < 2:
+        return None
+    
+    # Find the center point (average of all landmarks)
+    center_x = sum(point[0] for point in landmarks) / len(landmarks)
+    center_y = sum(point[1] for point in landmarks) / len(landmarks)
+    
+    # Calculate the distances from center to each landmark
+    distances = [
+        max(abs(point[0] - center_x), abs(point[1] - center_y))
+        for point in landmarks
+    ]
+    
+    max_distance = max(distances)
+    
+    # Apply scale factor to control box size
+    side_half = max_distance * scale_factor
+    
+    # Create square box centered on landmarks
+    x1 = int(center_x - side_half)
+    y1 = int(center_y - side_half)
+    x2 = int(center_x + side_half)
+    y2 = int(center_y + side_half)
+    
+    # Ensure box is within image boundaries
+    height, width = img_shape[:2]
+    x1 = max(0, x1)
+    y1 = max(0, y1)
+    x2 = min(width, x2)
+    y2 = min(height, y2)
+    
+    return [x1, y1, x2, y2]
+
+def process_retinaface_detections(img, align, target_size, normalization, visualize, image_path, model_name, model_onnx_path, path_str, boxes, scores, landmarks):
+    
+    face_embeddings = []
+                
+    for i, (box, score, landmark) in enumerate(zip(boxes, scores, landmarks)):
+        try:
+            # Use landmarks to create better bounding box if available
+            if landmark and len(landmark) >= 5:
+                improved_box = create_square_bounds_from_landmarks(landmark, img.shape, scale_factor=4.0)
+                if improved_box:
+                    x1, y1, x2, y2 = improved_box
+                else:
+                    x1, y1, x2, y2 = map(int, box)
+            else:
+                x1, y1, x2, y2 = map(int, box)
+                                
+            # Ensure coordinates are valid
+            x1 = max(0, x1)
+            y1 = max(0, y1)
+            x2 = min(img.shape[1], x2)
+            y2 = min(img.shape[0], y2)
+                                
+            if x2 <= x1 or y2 <= y1:
+                continue
+                                
+            # Extract face
+            face = img[y1:y2, x1:x2].copy()
+                                
+            # Create region info
+            region = {
+                "x": x1,
+                "y": y1,
+                "w": x2 - x1,
+                "h": y2 - y1,
+                "confidence": float(score)
+            }
+                                
+            # Set landmarks for alignment
+            if landmark and len(landmark) >= 2:
+                region["left_eye"] = tuple(map(int, landmark[0]))
+                region["right_eye"] = tuple(map(int, landmark[1]))
+            else:
+                region["left_eye"] = None
+                region["right_eye"] = None
+                                
+            # Align face using landmarks
+            if align and region["left_eye"] is not None and region["right_eye"] is not None:
+                aligned_face = align_face(face, img, region)
+                if aligned_face is not None and aligned_face.size > 0:
+                    face = aligned_face
+                                
+            # Crop and normalize
+            face = crop_face_for_embedding(face)
+            face_normalized = normalize_face(face, target_size, model_name, normalization)
+            if face_normalized is None:
+                continue
+                                    
+            detection = prepare_for_embedding(face_normalized, model_name, normalization)
+            if detection is None:
+                continue
+                                    
+            # Visualize processed face
+            if visualize and isinstance(image_path, str):
+                debug_dir = "debug_faces"
+                os.makedirs(debug_dir, exist_ok=True)
+                face_path = os.path.join(debug_dir, f"{os.path.basename(image_path)}_face_{i}.jpg")
+                if isinstance(detection, np.ndarray):
+                    cv2.imwrite(face_path, cv2.cvtColor(detection, cv2.COLOR_RGB2BGR))
+
+            embedding = get_arcface_embedding(detection, model_onnx_path)
+                                
+            if embedding is not None:
+
+                face_embeddings.append({
+                    "image_path": path_str,
+                    "embedding": embedding,
+                    "bbox": [region["x"], region["y"], region["w"], region["h"]],
+                    "confidence": region["confidence"]
+                })
+                            
+        except Exception as e:
+            logger.error(f"Error processing face {i}: {str(e)}")
+            continue
+    
+    return face_embeddings
