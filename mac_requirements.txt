@@ -1,7 +1,6 @@
 flask-ml==0.2.5
 fire==0.4.0
 retina-face==0.0.13
-deepface==0.0.88
 black
 isort
 ruff
