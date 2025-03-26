@@ -1,3 +1,4 @@
+
 import os
 import cv2
 import numpy as np
@@ -11,7 +12,7 @@ from src.facematch.utils.yolo_utils import (get_target_size, process_yolov8_outp
                                             process_yolov9_output, process_yolo11_output, visualize_detections, process_yolo_detections)
 
 from src.facematch.utils.retinaface_utils import (detect_with_retinaface, process_retinaface_detections)
-
+from src.facematch.hash import sha256_image
 
 
 def detect_faces_and_get_embeddings(
@@ -81,6 +82,11 @@ def detect_faces_and_get_embeddings(
                 
                 face_embeddings = process_retinaface_detections(img, align, target_size, normalization, visualize, image_path, model_name, model_onnx_path, path_str, boxes, scores, landmarks)
                 
+                for result in face_embeddings:
+                    image = sha256_image(result["image_path"], result["bbox"])
+                    result["sha256_image"] = image
+                    result["model_name"] = model_name
+                
                 if len(face_embeddings) > 0:
                     return True, face_embeddings
                 return False, []
@@ -147,8 +153,14 @@ def detect_faces_and_get_embeddings(
             # Process detections and get embeddings
             face_embeddings = process_yolo_detections(img, boxes, scores, landmarks, align, target_size, normalization, visualize, image_path, model_name, model_onnx_path, path_str, face_confidence_threshold, detector_backend)
             
+            for result in face_embeddings:
+                image = sha256_image(result["image_path"], result["bbox"])
+                result["sha256_image"] = image
+                result["model_name"] = model_name
+            
             if len(face_embeddings) > 0:
                 return True, face_embeddings
+
             return False, []
         
     except Exception as e:

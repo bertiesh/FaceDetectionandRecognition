@@ -1,0 +1,12 @@
+black
+isort
+tf-keras
+ultralytics
+pandas
+scikit-learn
+flask-ml
+faiss-cpu
+ruff
+python-dotenv
+onnxruntime
+chromadb
