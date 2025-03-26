@@ -68,6 +68,7 @@ conda install -c conda-forge pandas
 conda install -c pytorch faiss-cpu
 conda install -c conda-forge opencv
 conda install -c conda-forge scikit-learn
+conda install -c conda-forge onnxruntime
 ```
 install the remaining dependencies:
 ```
@@ -83,7 +84,12 @@ conda install pytorch=2.1.2 torchvision=0.16.2 -c pytorch
 ```
 
 ---
+## Models
 
+link to yolov9.onnx below (best detector so far, optimized for faces)
+
+https://drive.google.com/file/d/10lnK9ljMPihm40A3IVVNk9rz9FiLHulU/view?usp=share_link
+---
 # Usage
 
 **Sample dataset to test the model:** The images in the `\resources\sample_images` folder can be used as the database, and `\resources\test_image.jpg` can be used as the query image to test the model.

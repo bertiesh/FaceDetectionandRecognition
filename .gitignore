@@ -25,3 +25,7 @@ LFWdataset/
 .env
 
 chroma.log
+/src/facematch/models/*
+/debug_detections
+/visualization
+debug_faces
