@@ -1,4 +1,3 @@
-﻿deepface
 black
 isort
 tf-keras
@@ -8,5 +7,5 @@ scikit-learn
 flask-ml
 faiss-cpu
 ruff
+python-dotenv
 onnxruntime
-opencv-contrib-python
