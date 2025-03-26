@@ -95,95 +95,6 @@ def crop_face_for_embedding(face_img):
     return cropped_face
 
 
-# def adjust_face_bbox(box, height_factor=1.25, original_size=None):
-#     """
-#     Adjust face bounding box by expanding height by a factor and making width match the new height.
-#     """
-
-#     x1, y1, x2, y2 = box
-    
-#     current_height = y2 - y1
-#     current_width = x2 - x1
-    
-#     center_x = (x1 + x2) / 2
-#     center_y = (y1 + y2) / 2
-    
-#     new_height = current_height * height_factor
-#     new_width = new_height
-    
-#     new_x1 = center_x - (new_width / 2)
-#     new_y1 = center_y - (new_height / 2)
-#     new_x2 = center_x + (new_width / 2)
-#     new_y2 = center_y + (new_height / 2)
-    
-#     # Ensure box is within image boundaries if original_size is provided
-#     if original_size:
-#         img_width, img_height = original_size
-#         new_x1 = max(0, new_x1)
-#         new_y1 = max(0, new_y1)
-#         new_x2 = min(img_width, new_x2)
-#         new_y2 = min(img_height, new_y2)
-    
-#     return [new_x1, new_y1, new_x2, new_y2]
-
-# def extract_face_with_height_expansion(img, box, landmark=None, detector_backend='yolov8', height_factor=1.25):
-#     """Enhanced for YOLOv8 detections. Expands the height while preserving aspect ratio, preventing distortion in subsequent processing."""
-#     img_height, img_width = img.shape[:2]
-    
-#     if len(box) == 4:
-#         x1, y1, x2, y2 = map(float, box)
-#     else:
-#         logger.warning(f"Invalid box format: {box}")
-#         return None, None
-    
-#     # Only expand YOLOv8 detections
-#     if detector_backend == 'yolov8':
-#         # Current dimensions
-#         current_height = y2 - y1
-#         current_width = x2 - x1
-        
-#         # Center point
-#         center_y = (y1 + y2) / 2
-        
-#         # Expand height while keeping the same width
-#         new_height = current_height * height_factor
-        
-#         # Adjust y-coordinates to expand height
-#         y1 = center_y - (new_height / 2)
-#         y2 = center_y + (new_height / 2)
-    
-#     # Convert to int and ensure within image boundaries
-#     x1 = max(0, int(x1))
-#     y1 = max(0, int(y1))
-#     x2 = min(img_width, int(x2))
-#     y2 = min(img_height, int(y2))
-    
-#     # Check if box is valid
-#     if x2 <= x1 or y2 <= y1 or x2 > img_width or y2 > img_height:
-#         logger.warning(f"Invalid face coordinates: x1={x1}, y1={y1}, x2={x2}, y2={y2}")
-#         return None, None
-    
-#     # Extract face region
-#     try:
-#         face = img[y1:y2, x1:x2]
-#         if face.size == 0:
-#             logger.warning("Extracted face has zero size")
-#             return None, None
-#     except Exception as e:
-#         logger.error(f"Error extracting face: {e}")
-#         return None, None
-    
-#     # Create region info with landmarks
-#     region = {"x": x1, "y": y1, "w": x2 - x1, "h": y2 - y1, "left_eye": None,"right_eye": None}
-    
-#     # Add landmarks if available
-#     if landmark is not None:
-#         if len(landmark) >= 2:
-#             region["left_eye"] = (int(landmark[0][0]), int(landmark[0][1]))
-#             region["right_eye"] = (int(landmark[1][0]), int(landmark[1][1]))
-    
-#     return face, region
-
 def process_yolov8_output(outputs, letterbox_info=None, height_factor=1.25):
     """Process YOLOv8 face detection output in grid format (1, 5, 8400). Creates square bounding boxes and returns them in a format compatible with the rest of the pipeline."""
     boxes, scores, landmarks = [], [], []
@@ -670,28 +581,6 @@ def prepare_for_embedding(face, model_name, normalization):
         if face is not None:
             return face.astype(np.uint8)
         return None
-    
-# def modified_crop_for_yolov8(face_img):
-#     """Special crop function for YOLOv8 faces that preserves square aspect ratio."""
-#     if face_img is None or face_img.size == 0:
-#         return None
-        
-#     h, w = face_img.shape[:2]
-    
-#     margin = int(min(h, w) * 0.05)  # 5% margin
-    
-#     y_start = margin
-#     y_end = h - margin
-#     x_start = margin
-#     x_end = w - margin
-    
-#     # Ensure valid dimensions
-#     if y_end <= y_start or x_end <= x_start:
-#         return face_img
-    
-#     cropped_face = face_img[y_start:y_end, x_start:x_end]
-    
-#     return cropped_face
 
 
 def process_yolo_detections(img, boxes, scores, landmarks, align=True, target_size=None, normalization=True, visualize=False, image_path=None, model_name="ArcFace", model_onnx_path=None, path_str=None,face_confidence_threshold=0.02,detector_backend="yolov8"):
