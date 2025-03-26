@@ -14,6 +14,16 @@ venv/
 # Ignore data folders
 resources/data/
 resources/test_images/
+resources/LFWdataset
 run_server.sh
 run_server2.sh
 
+*.DS_Store
+
+facematch-env/
+LFWdataset/
+.env
+/src/facematch/models/*
+/debug_detections
+/visualization
+debug_faces

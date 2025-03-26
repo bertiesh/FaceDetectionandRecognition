@@ -51,8 +51,8 @@ Note: One such pair of sample database and queries directories have already been
     ```
 
 3. **Run Bulk Upload and Measure Upload Time**
-    - Replace the directory names in the `run_bulk_upload.sh` file with appropriate directory locations.
-    - Execute `run_bulk_upload.sh` to upload images to the database.
+    - Add database directory to .env file in the main root of the project (e.g. ./FaceDetectionandRecognition/.env) with the name DATABASE_DIRECTORY
+    - Execute `run_bulk_upload.sh <database_name>` to upload images to the database. Inserting the exact name of the database as the first argument.
 
     ```
     ./run_bulk_upload.sh
@@ -65,6 +65,8 @@ Note: One such pair of sample database and queries directories have already been
     ```
     ./run_face_find_time.sh
     ```
+
+    - Alternatively, run `
 
 5. **Run Face Find and Measure Accuracy**
     - Replace the directory names in the `run_face_find_accuracy.sh` file with appropriate directory locations.
@@ -106,8 +108,8 @@ Note: One such pair of sample database and queries directories have already been
 
 3. **Run Bulk Upload**
     - Create a `new_sample_database directory` that contains only the first half of the images in the original `sample_database directory`.
-    - Replace the directory names (use `new_sample_database directory` ) in the `run_bulk_upload.sh` file with appropriate directory locations.
-    - Execute `run_bulk_upload.sh` to upload images to the database.
+    - Add database directory to .env file in the main root of the project (e.g. ./FaceDetectionandRecognition/.env) with the name DATABASE_DIRECTORY
+    - Execute `run_bulk_upload.sh <database_name>` to upload images to the database. Inserting the exact name of the database as the first argument
 
     ```
     ./run_bulk_upload.sh
@@ -131,3 +133,50 @@ Note: One such pair of sample database and queries directories have already been
 5. **Visualize the ROC curve**
 - The confusion matrix from the above can be used to measure tpr and fpr for each threshold.
 - Use this to plot the ROC curve.
+
+
+## Instructions to Run All Benchmark Testing 
+1. **Prepare Dataset**
+    - Download the dataset containing multiple directories (each directory represents a person and contains their images) from the link under the [Dataset](#dataset) section.
+
+   > [!NOTE]\
+   > *All the code below should be executed from the `benchmark_testing` directory.*
+   > Make sure to execute all .sh files using git bash.
+
+2. **Run Bulk Upload**
+    - Add database directory to .env file in the main root of the project (e.g. `./FaceDetectionandRecognition/.env`) with the name DATABASE_DIRECTORY
+    - Execute `run_bulk_upload.sh <database_name>` to upload images to the database. Inserting the exact name of the database as the first argument (probably including the current model being used which is specified under `model_name` in `./FaceDetectionandRecognition/src/facematch/config/model_config.json`).
+    - repeat the above after changing `model_name` to `Facenet`, then `VGG-Face`. There should now be three databases, one for each model.
+
+    ```
+    ./run_bulk_upload.sh <database_name>
+    ```
+
+4. **Run Face Find Benchmark**
+    - Add `SAMPLE_QUERIES_DIRECTORY` to the .env file as the path to the folder containing all the query images
+    - Add `OUTPUT_CSV_DIRECTORY` to the .env file as the path to where the output csv files containing matches for each query image given a specific model and similarity threshold should be outputted.
+    - Add `OUTPUT_CSV_PATH` to the .env file as `OUTPUT_CSV_DIRECTORY`+ the beginning of a file name, e.g:
+
+      ```
+        OUTPUT_CSV_DIRECTORY="<project directory>\\benchmark_testing\\LFWdataset"
+        OUTPUT_CSV_PATH="${OUTPUT_CSV_DIRECTORY}\\output"
+      ```
+
+    - Given this setup, files will be outputted with the name output_ArcFace_0.5.csv given ArcFace is the model used and 0.5 is the similarity threshold.
+    - Execute `run_face_find_benchmark.sh <db_name> <start_index> <num of images> <model>` to create an output csv for each similarity threshold.
+    - Repeat the above changing `<model>` to `Facenet`, then `VGG-Face` and `<db_name>` to the database name of each respective model
+
+      ```
+        ./run_face_find_accuracy.sh
+      ```
+
+    - Use `test_data_metrics_confusion_matrix.py` to analyze the precision and recall for each similarity threshold.
+
+4. **Run Test Data Metrics Benchmark**
+    - Add `BENCHMARK_RESULTS_PATH` to the .env file as the path to where the output .csv files should be stored plus a beginning name of a possible csv file, e.g. `<output directory>\\face_match_benchmark_results`
+
+    - Use `test_data_metrics_benchmark.py` to output benchmark results for top-1, 5 and 10 accuracies to separate .csv files.
+
+    ```
+    python test_data_benchmark.py
+    ```

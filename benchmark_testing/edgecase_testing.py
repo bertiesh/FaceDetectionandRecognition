@@ -47,8 +47,8 @@ def check_face_detection_edge_cases(image_path):
     cv2.destroyAllWindows()
 
 
-image1 = "path\\to\\image1"
-image2 = "path\\to\\image2"
+image1 = "../resources/LFWdataset/sample_queries/Aaron_Peirsol_0004.jpg"
+image2 = "../resources/LFWdataset/sample_queries/Aaron_Sorkin_0001.jpg"
 check_face_detection_edge_cases(image1)
 check_face_detection_edge_cases(image2)
 check_face_recognition_edge_cases(image1, image2)
