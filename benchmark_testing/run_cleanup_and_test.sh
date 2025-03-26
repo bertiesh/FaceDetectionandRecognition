@@ -2,6 +2,7 @@
 # Modified main script (run_all.sh)
 
 # Parse command line arguments
+database_name="sample_db"
 similarity_threshold=0.50  # Default value
 while [[ "$#" -gt 0 ]]; do
   case $1 in
@@ -31,7 +32,7 @@ fi
 # Run the required scripts without waiting for key presses
 echo "Running bulk upload script..."
 # Use modified run_bulk_upload_auto.sh script (see below)
-./run_bulk_upload.sh
+./run_bulk_upload.sh $database_name
 
 echo "Running face find accuracy script..."
 # Pass the similarity threshold to the run_face_find_accuracy.sh script
