@@ -84,7 +84,8 @@ def get_embedding(face_img, model_name, normalization: str = "base",):
             embeddings = model.feature(input_blob)
             log_info(f"Embedding shape: {embeddings.shape}")
             # log_info(f"Embedding type: {type(embeddings)}")
-            embedding = embeddings[0].tolist()
+            # embedding = embeddings[0].tolist()
+            embedding = embeddings[0][0]
             # embedding = embeddings[0].reshape(-1)
             log_info(f"Embedding type: {type(embedding)}")
         except Exception as e:
@@ -95,9 +96,13 @@ def get_embedding(face_img, model_name, normalization: str = "base",):
             result = ort_session.run(None, {input_name: img})
         except Exception as e:
             log_info(f"Failed to run inference: {str(e)}")
-        # log_info(f"Result: {result[0]}")
-        embedding = result[0].flatten()
-        log_info(f"Embedding shape: {embedding.shape}")
+        log_info(f"Result: {result[0][0]}")
+        # embedding = result[0].flatten()
+        # log_info(f"Embedding shape: {embedding.shape}")
         # log_info(f"Embedding type: {type(embedding)}")
+        embedding = result[0][0]
+        # log_info(f"Embedding shape: {embedding.shape}")
+    embedding_norm = np.linalg.norm(embedding)
+    normalized_embedding = embedding / embedding_norm
     
-    return embedding
+    return normalized_embedding
