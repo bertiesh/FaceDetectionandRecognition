@@ -89,6 +89,16 @@ def query_bulk(collection, data, n_results, threshold):
     # Flatten results and include index
     data = []
     for query_idx, (q_ids, q_distances, q_embeddings, q_metadatas) in enumerate(zip(result["ids"], result["distances"], result["embeddings"], result["metadatas"])):
+        if len(q_ids) == 0:  # If the query has no results, insert a placeholder
+            data.append({
+                "query_index": query_idx,
+                "face_idx": 0,
+                "id": None,
+                "distance": 1,
+                "embedding": None,
+                "img_path": None
+            })
+            continue
         for face_idx, (f_ids, f_distances, f_embeddings, f_metadatas) in enumerate(zip(q_ids, q_distances, q_embeddings, q_metadatas)):
             for (image_id, distance, embedding, metadata) in zip(f_ids, f_distances, f_embeddings, f_metadatas):
                 data.append({

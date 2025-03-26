@@ -173,7 +173,7 @@ class FaceMatchModel:
             
             img_files = os.listdir(query_directory)
             img_files.sort()
-            for idx, filename in enumerate(img_files[0:10]): 
+            for idx, filename in enumerate(img_files): 
                 file_path = os.path.join(query_directory, filename)
                 if filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp")):
                     status, embedding_outputs = detect_faces_and_get_embeddings(
@@ -193,13 +193,13 @@ class FaceMatchModel:
                     matching_image_paths = query_bulk(collection_name, all_embedding_outputs, n_results=10, threshold=threshold)
                     all_embedding_outputs = []
                     all_matching_image_paths.extend(matching_image_paths)
-                    log_info(f"Query: {img_files[idx - query_batch_size]}  Match: {matching_image_paths[0]}")
+                    log_info(f"Query: {img_files[idx - num_embeddings+1]}  Match: {matching_image_paths[0]}")
 
             if len(all_embedding_outputs) != 0:
                     matching_image_paths = query_bulk(collection_name, all_embedding_outputs, n_results=10, threshold=threshold)
                     all_matching_image_paths.extend(matching_image_paths)
                 
-            import pdb; pdb.set_trace()
+            
             return True, all_matching_image_paths
             
         except Exception as e:
