@@ -2,7 +2,7 @@
 
 if [ $# -ne 1 ]; then
     echo -e "Expected 1 argument\n"
-    echo -e "Usage: ./run_bulk_upload.sh database_name\n"
+    echo -e "Usage: ./run_bulk_upload.sh collection_name\n"
     read -p "Press any key to exit..."
     exit 1
 fi
@@ -23,7 +23,7 @@ sleep 10
 start_time=$(date +%s)
 
 # Call client script to upload images from to database (the code currently only accepts one directory at a time)
-python ../src/Sample_Client/sample_bulk_upload_client.py --directory_paths "$DATABASE_DIRECTORY" --database_name "$1"
+python ../src/Sample_Client/sample_bulk_upload_client.py --directory_paths "$DATABASE_DIRECTORY" --collection_name "$1"
 
 # Sample directory path
 # "<path to dataset folder>\\LFWdataset\\sample_database"

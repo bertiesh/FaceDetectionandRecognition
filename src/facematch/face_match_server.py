@@ -1,11 +1,11 @@
 import json
 import os
-from pathlib import Path
+import chromadb
 from typing import List, TypedDict
 
 from flask_ml.flask_ml_server import MLServer, load_file_as_string
-from flask_ml.flask_ml_server.models import (BatchDirectoryInput,
-                                             BatchFileInput, BatchFileResponse,
+from flask_ml.flask_ml_server.models import (BatchDirectoryInput, BatchFileInput,
+                                             DirectoryInput, BatchFileResponse,
                                              EnumParameterDescriptor, EnumVal,
                                              FileResponse,
                                              FloatRangeDescriptor, InputSchema,
@@ -18,7 +18,8 @@ from flask_ml.flask_ml_server.models import (BatchDirectoryInput,
 from src.facematch.interface import FaceMatchModel
 from src.facematch.utils.GPU import check_cuDNN_version
 from src.facematch.utils.logger import log_info
-from src.facematch.utils.resource_path import get_resource_path
+
+DBclient = chromadb.HttpClient(host='localhost', port=8000)
 
 server = MLServer(__name__)
 
@@ -33,14 +34,12 @@ server.add_app_metadata(
     info=load_file_as_string(info_file_path),
 )
 
-# Initialize with "Create a new database" value used in frontend to take new file name entered by user
-available_databases: List[str] = ["Create a new database"]
+# Initialize with "Create a new collection" value used in frontend to take new file name entered by user
+available_collections: List[str] = ["Create a new collection"]
 
-# Load all available datasets under resources/data folder
-database_directory_path = get_resource_path("data")
-csv_files = list({file.stem for file in Path(database_directory_path).glob("*.csv")})
-
-available_databases.extend(csv_files)
+# Load all available collections from chromaDB
+existing_collections = [collection.split('_')[0] for collection in DBclient.list_collections()]
+available_collections.extend(existing_collections)
 
 # Read default similarity threshold from config file
 config_path = os.path.join(script_dir, "config", "model_config.json")
@@ -62,15 +61,15 @@ def get_ingest_query_image_task_schema() -> TaskSchema:
         ],
         parameters=[
             ParameterSchema(
-                key="database_name",
-                label="Database Name",
+                key="collection_name",
+                label="Collection Name",
                 value=EnumParameterDescriptor(
                     enum_vals=[
-                        EnumVal(key=database_name, label=database_name)
-                        for database_name in available_databases[1:]
+                        EnumVal(key=collection_name, label=collection_name)
+                        for collection_name in available_collections[1:]
                     ],
-                    message_when_empty="No databases found",
-                    default=(available_databases[0]),
+                    message_when_empty="No collections found",
+                    default=(available_collections[0]),
                 ),
             ),
             ParameterSchema(
@@ -95,7 +94,7 @@ class FindFaceInputs(TypedDict):
 
 
 class FindFaceParameters(TypedDict):
-    database_name: str
+    collection_name: str
     similarity_threshold: float
 
 
@@ -103,7 +102,7 @@ class FindFaceParameters(TypedDict):
 @server.route(
     "/findface",
     order=1,
-    short_title="Find Matching Faces",
+    short_title="Find Matching Faces For Single Image",
     task_schema_func=get_ingest_query_image_task_schema,
 )
 def find_face_endpoint(
@@ -113,11 +112,6 @@ def find_face_endpoint(
     # Get list of file paths from input
     input_file_paths = [item.path for item in inputs["image_paths"].files]
 
-    # Convert database name to relative path to data directory in resources folder
-    parameters["database_name"] = os.path.join(
-        "data", parameters["database_name"] + ".csv"
-    )
-
     # Check CUDNN compatability
     check_cuDNN_version()
 
@@ -125,7 +119,7 @@ def find_face_endpoint(
     status, results = face_match_model.find_face(
         input_file_paths[0],
         parameters["similarity_threshold"],
-        parameters["database_name"],
+        parameters["collection_name"],
     )
     log_info(status)
     log_info(results)
@@ -142,6 +136,77 @@ def find_face_endpoint(
 
 
 # Frontend Task Schema defining inputs and paraneters that users can enter
+def get_ingest_bulk_query_image_task_schema() -> TaskSchema:
+    return TaskSchema(
+        inputs=[
+            InputSchema(
+                key="query_directory",
+                label="Query Directory",
+                input_type=InputType.DIRECTORY,
+            )
+        ],
+        parameters=[
+            ParameterSchema(
+                key="collection_name",
+                label="Collection Name",
+                value=EnumParameterDescriptor(
+                    enum_vals=[
+                        EnumVal(key=collection_name, label=collection_name)
+                        for collection_name in available_collections[1:]
+                    ],
+                    message_when_empty="No collections found",
+                    default=(available_collections[0]),
+                ),
+            ),
+            ParameterSchema(
+                key="similarity_threshold",
+                label="Similarity Threshold",
+                value=RangedFloatParameterDescriptor(
+                    range=FloatRangeDescriptor(min=-1.0, max=1.0),
+                    default=default_threshold,
+                ),
+            ),
+        ],
+    )
+
+
+# Inputs and parameters for the findfacebulk endpoint
+class FindFaceBulkInputs(TypedDict):
+    query_directory: DirectoryInput
+
+
+class FindFaceBulkParameters(TypedDict):
+    collection_name: str
+    similarity_threshold: float
+
+
+# Endpoint that is used to find matches to a set of query images
+@server.route(
+    "/findfacebulk",
+    order=2,
+    short_title="Find Matching Faces In Bulk",
+    task_schema_func=get_ingest_bulk_query_image_task_schema,
+)
+def find_face_bulk_endpoint(
+    inputs: FindFaceBulkInputs, parameters: FindFaceBulkParameters
+) -> ResponseBody:
+
+    # Check CUDNN compatability
+    check_cuDNN_version()
+
+    # Call model function to find matches
+    status, results = face_match_model.find_face_bulk(
+        inputs["query_directory"].path,
+        parameters["similarity_threshold"],
+        parameters["collection_name"],
+    )
+    log_info(status)
+
+    return ResponseBody(root=TextResponse(value=str(results)))
+
+
+
+# Frontend Task Schema defining inputs and paraneters that users can enter
 def get_ingest_images_task_schema() -> TaskSchema:
     return TaskSchema(
         inputs=[
@@ -153,23 +218,23 @@ def get_ingest_images_task_schema() -> TaskSchema:
         ],
         parameters=[
             ParameterSchema(
-                key="dropdown_database_name",
-                label="Choose Database",
+                key="dropdown_collection_name",
+                label="Choose Collection",
                 value=EnumParameterDescriptor(
                     enum_vals=[
-                        EnumVal(key=database_name, label=database_name)
-                        for database_name in available_databases
+                        EnumVal(key=collection_name, label=collection_name)
+                        for collection_name in available_collections
                     ],
-                    message_when_empty="No databases found",
+                    message_when_empty="No collections found",
                     default=(
-                        available_databases[0] if len(available_databases) > 0 else ""
+                        available_collections[0] if len(available_collections) > 0 else ""
                     ),
                 ),
             ),
             ParameterSchema(
-                key="database_name",
-                label="New Database Name (Optional)",
-                value=TextParameterDescriptor(default="SampleDatabase"),
+                key="collection_name",
+                label="New Collection Name (Optional)",
+                value=TextParameterDescriptor(default="sample"),
             ),
         ],
     )
@@ -181,31 +246,26 @@ class BulkUploadInputs(TypedDict):
 
 
 class BulkUploadParameters(TypedDict):
-    dropdown_database_name: str
-    database_name: str
+    dropdown_collection_name: str
+    collection_name: str
 
 
-# Endpoint to allow users to upload images to database
+# Endpoint to allow users to upload images to chromaDB
 @server.route(
     "/bulkupload",
     order=0,
-    short_title="Upload Images to Database",
+    short_title="Upload Images to collection in chromaDB database",
     task_schema_func=get_ingest_images_task_schema,
 )
 def bulk_upload_endpoint(
     inputs: BulkUploadInputs, parameters: BulkUploadParameters
 ) -> ResponseBody:
-    # If dropdown value chosen is Create a new database, then add database path to available databases, otherwise set
-    # database path to dropdown value
-    if parameters["dropdown_database_name"] != "Create a new database":
-        parameters["database_name"] = parameters["dropdown_database_name"]
+    # If dropdown value chosen is Create a new collection, then add collection to available collections, otherwise set
+    # collection to dropdown value
+    if parameters["dropdown_collection_name"] != "Create a new collection":
+        parameters["collection_name"] = parameters["dropdown_collection_name"]
 
-    new_database_name = parameters["database_name"]
-
-    # Convert database name to absolute path to database in resources directory
-    parameters["database_name"] = os.path.join(
-        "data", parameters["database_name"] + ".csv"
-    )
+    new_collection_name = parameters["collection_name"]
 
     # Check CUDNN compatability
     check_cuDNN_version()
@@ -217,15 +277,15 @@ def bulk_upload_endpoint(
     log_info(input_directory_paths[0])
     # Call the model function
     response = face_match_model.bulk_upload(
-        input_directory_paths[0], parameters["database_name"]
+        input_directory_paths[0], parameters["collection_name"]
     )
 
     if response.startswith("Successfully uploaded") and response.split(" ")[2] != "0":
         # Some files were uploaded
-        if parameters["dropdown_database_name"] == "Create a new database":
-            # Add new database to available databases if database name is not already in available databases
-            if parameters["database_name"] not in available_databases:
-                available_databases.append(new_database_name)
+        if parameters["dropdown_collection_name"] == "Create a new collection":
+            # Add new collection to available collections if collection name is not already in available collections
+            if parameters["collection_name"] not in available_collections:
+                available_collections.append(new_collection_name)
     return ResponseBody(root=TextResponse(value=response))
 
 

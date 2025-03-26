@@ -1,14 +1,14 @@
 import argparse
-import os
+import chromadb
 
 from flask_ml.flask_ml_client import MLClient
 from flask_ml.flask_ml_server.models import BatchFileInput, Input
 
-from src.facematch.utils.resource_path import get_resource_path
-
 # Define the URL and set up client
 IMAGE_MATCH_MODEL_URL = "http://127.0.0.1:5000/findface"
 client = MLClient(IMAGE_MATCH_MODEL_URL)
+
+DBclient = chromadb.HttpClient(host='localhost', port=8000)
 
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="To parse text arguments")
@@ -17,9 +17,9 @@ parser = argparse.ArgumentParser(description="To parse text arguments")
 parser.add_argument(
     "--file_paths", metavar="file", type=str, nargs="+", help="Path to images"
 )
-# Name of database from user
+# Name of embedding collection from user
 parser.add_argument(
-    "--database_name", required=True, type=str, help="Name of the database file"
+    "--collection_name", required=True, type=str, help="Name of the collection file"
 )
 
 # Face Similarity threshold from user
@@ -31,17 +31,17 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-# Check if database exists
-if not os.path.exists(
-    get_resource_path(os.path.join("data", args.database_name + ".csv"))
-):
-    print("Database does not exist")
+# Check if collection exists
+collections = DBclient.list_collections()
+
+if args.collection_name not in map(lambda c: c.split("_")[0],collections):
+    print("Collection does not exist")
     exit()
 
 # Set parameters and inputs for the request
 parameters = {
     "similarity_threshold": args.similarity_threshold,
-    "database_name": args.database_name,
+    "collection_name": args.collection_name,
 }
 inputs = {
     "image_paths": Input(

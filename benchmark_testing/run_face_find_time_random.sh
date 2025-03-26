@@ -2,14 +2,14 @@
 
 if [ $# -ne 1 ]; then
     echo -e "Expected 1 argument\n"
-    echo -e "Usage: ./run_face_find_time_random.sh database_name\n"
+    echo -e "Usage: ./run_face_find_time_random.sh collection_name\n"
     read -p "Press any key to exit..."
     exit 1
 fi
 
 source ../.env
 
-database_name=$1
+collection_name=$1
 
 export PYTHONPATH=$(pwd)/..
 
@@ -37,7 +37,7 @@ random_file="${files[random_index]}"
 start_time=$(date +%s)
 
 # Call client script to find match for random image
-result=$(python ../src/Sample_Client/sample_find_face_client.py --file_paths "$random_file" --database_name "$database_name")
+result=$(python ../src/Sample_Client/sample_find_face_client.py --file_paths "$random_file" --collection_name "$collection_name")
 
 # Sample file path
 # "<path to dataset folder>\\LFWdataset\\sample_queries\\image.jpg"
