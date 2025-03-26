@@ -92,40 +92,50 @@ conda install pytorch=2.1.2 torchvision=0.16.2 -c pytorch
 
 _Run all below commands from root directory of project._
 
-### Start the server
+### Start DB server
+```
+chroma run --path ./resources/data
+```
+
+### Start the FaceMatch server
 ```
 python -m src.facematch.face_match_server
 ```
 
 ### Task 1: Upload images to database
 ```
-python -m src.Sample_Client.sample_bulk_upload_client --directory_paths <path_to_directory_of_images> --database_name <database_name>
+python -m src.Sample_Client.sample_bulk_upload_client --directory_paths <path_to_directory_of_images> --collection_name <collection_name>
 ```
-Note: The name of the database could be a new database you wish to create or an existing database you wish to upload to.
+Note: The name of the collection could be a new collection you wish to create or an existing collection you wish to upload to.
 
 _Run with Sample images directory: (Requires absolute path of directory)_
 
 ```
-python -m src.Sample_Client.sample_bulk_upload_client --directory_paths <path_to_project>\resources\sample_images --database_name test_database
+python -m src.Sample_Client.sample_bulk_upload_client --directory_paths <path_to_project>\resources\sample_images --collection_name test
 ```
 
 ### Task 2: Find matching faces
 ```
-python -m src.Sample_Client.sample_find_face_client --file_paths <path_to_image> --database_name <database_name> --similarity_threshold <similarity_threshold>
+python -m src.Sample_Client.sample_find_face_client --file_paths <path_to_image> --collection_name <collection_name> --similarity_threshold <similarity_threshold>
 ```
-> Note: The name of the database needs to be an existing database you wish to query.
+> Note: The name of the collection needs to be an existing collection you wish to query.
 > The default similarity threshold, 0.45 is used if no similarity threshold is provided.
 
 
 _Run with Sample test image: (Requires absolute path of image)_
 
 ```
-python -m src.Sample_Client.sample_find_face_client --file_paths <path_to_project>\resources\test_image.jpg --database_name test_database --similarity_threshold 0.5
+python -m src.Sample_Client.sample_find_face_client --file_paths <path_to_project>\resources\test_image.jpg --collection_name test_collection --similarity_threshold 0.5
 ```
 
 ## Rescue-Box frontend
 
 _Run below command from root directory of project._
+
+### Start DB server
+```
+chroma run --path ./resources/data
+```
 
 ### Start the server
 ```

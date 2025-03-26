@@ -4,8 +4,8 @@ import chromadb
 from typing import List, TypedDict
 
 from flask_ml.flask_ml_server import MLServer, load_file_as_string
-from flask_ml.flask_ml_server.models import (BatchDirectoryInput,
-                                             BatchFileInput, BatchFileResponse,
+from flask_ml.flask_ml_server.models import (BatchDirectoryInput, BatchFileInput,
+                                             DirectoryInput, BatchFileResponse,
                                              EnumParameterDescriptor, EnumVal,
                                              FileResponse,
                                              FloatRangeDescriptor, InputSchema,
@@ -38,7 +38,8 @@ server.add_app_metadata(
 available_collections: List[str] = ["Create a new collection"]
 
 # Load all available collections from chromaDB
-available_collections.extend(DBclient.list_collections())
+existing_collections = [collection.split('_')[0] for collection in DBclient.list_collections()]
+available_collections.extend(existing_collections)
 
 # Read default similarity threshold from config file
 config_path = os.path.join(script_dir, "config", "model_config.json")
@@ -101,7 +102,7 @@ class FindFaceParameters(TypedDict):
 @server.route(
     "/findface",
     order=1,
-    short_title="Find Matching Faces",
+    short_title="Find Matching Faces For Single Image",
     task_schema_func=get_ingest_query_image_task_schema,
 )
 def find_face_endpoint(
@@ -132,6 +133,77 @@ def find_face_endpoint(
     ]
 
     return ResponseBody(root=BatchFileResponse(files=image_results))
+
+
+# Frontend Task Schema defining inputs and paraneters that users can enter
+def get_ingest_bulk_query_image_task_schema() -> TaskSchema:
+    return TaskSchema(
+        inputs=[
+            InputSchema(
+                key="query_directory",
+                label="Query Directory",
+                input_type=InputType.DIRECTORY,
+            )
+        ],
+        parameters=[
+            ParameterSchema(
+                key="collection_name",
+                label="Collection Name",
+                value=EnumParameterDescriptor(
+                    enum_vals=[
+                        EnumVal(key=collection_name, label=collection_name)
+                        for collection_name in available_collections[1:]
+                    ],
+                    message_when_empty="No collections found",
+                    default=(available_collections[0]),
+                ),
+            ),
+            ParameterSchema(
+                key="similarity_threshold",
+                label="Similarity Threshold",
+                value=RangedFloatParameterDescriptor(
+                    range=FloatRangeDescriptor(min=-1.0, max=1.0),
+                    default=default_threshold,
+                ),
+            ),
+        ],
+    )
+
+
+# Inputs and parameters for the findfacebulk endpoint
+class FindFaceBulkInputs(TypedDict):
+    query_directory: DirectoryInput
+
+
+class FindFaceBulkParameters(TypedDict):
+    collection_name: str
+    similarity_threshold: float
+
+
+# Endpoint that is used to find matches to a set of query images
+@server.route(
+    "/findfacebulk",
+    order=2,
+    short_title="Find Matching Faces In Bulk",
+    task_schema_func=get_ingest_bulk_query_image_task_schema,
+)
+def find_face_bulk_endpoint(
+    inputs: FindFaceBulkInputs, parameters: FindFaceBulkParameters
+) -> ResponseBody:
+
+    # Check CUDNN compatability
+    check_cuDNN_version()
+
+    # Call model function to find matches
+    status, results = face_match_model.find_face_bulk(
+        inputs["query_directory"].path,
+        parameters["similarity_threshold"],
+        parameters["collection_name"],
+    )
+    log_info(status)
+
+    return ResponseBody(root=TextResponse(value=str(results)))
+
 
 
 # Frontend Task Schema defining inputs and paraneters that users can enter
