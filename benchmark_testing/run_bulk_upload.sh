@@ -7,8 +7,8 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-#source ../.env
-DATABASE_DIRECTORY="../resources/LFWdataset/new_sample_database"
+source ../.env
+
 export PYTHONPATH=$(pwd)/..
 
 # Start the Python server in the background
