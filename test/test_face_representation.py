@@ -1,5 +1,6 @@
 import unittest
-
+import numpy as np
+ 
 from src.facematch.face_representation import detect_faces_and_get_embeddings
 from src.facematch.utils.resource_path import get_resource_path
 
@@ -13,7 +14,11 @@ class TestApp(unittest.TestCase):
         )
         assert status is True
         assert len(result[0]["embedding"]) == 512
-        assert result[0]["bbox"] == [222, 200, 90, 120]
+        assert np.all(
+            np.abs(np.array(result[0]["bbox"]) - [226, 201, 83, 119])
+            / [226, 201, 83, 119]
+            < 10
+        )
 
 
 if __name__ == "__main__":

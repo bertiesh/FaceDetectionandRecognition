@@ -1,5 +1,4 @@
 # built-in dependencies
-from typing import Any, Dict, List, Union
 
 # 3rd party dependencies
 import numpy as np
@@ -44,14 +43,14 @@ def get_embedding(face_img, model_name, normalization: str = "base",):
         target_size = ort_session.get_inputs()[0].shape[1:3]
     log_info(f"target_size: {target_size}")
 
-    factor_0 = target_size[0] / face_img.shape[0]
-    factor_1 = target_size[1] / face_img.shape[1]
-    factor = min(factor_0, factor_1)
+    # factor_0 = target_size[0] / face_img.shape[0]
+    # factor_1 = target_size[1] / face_img.shape[1]
+    # factor = min(factor_0, factor_1)
 
-    dsize = (
-        int(face_img.shape[1] * factor),
-        int(face_img.shape[0] * factor),
-    )
+    # dsize = (
+    #     int(face_img.shape[1] * factor),
+    #     int(face_img.shape[0] * factor),
+    # )
     diff_0 = target_size[0] - face_img.shape[0]
     diff_1 = target_size[1] - face_img.shape[1]
     face_img = np.pad(

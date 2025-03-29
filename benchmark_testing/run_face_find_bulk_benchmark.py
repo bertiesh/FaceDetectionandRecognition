@@ -47,7 +47,7 @@ def query_find_face_bulk(query_directory, collection_name, similarity_threshold)
         response_data = ast.literal_eval(response['value'])
         return response_data
     
-    except:
+    except Exception:
         # If response is not an array, print the value
         print(response["value"])
         return response["value"]
