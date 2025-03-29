@@ -33,6 +33,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Create models directory
+        run: mkdir -p "${{ github.workspace }}/src/facematch/models"
+
+      - name: Install ONNX Models from Google Drive
+        run: |
+          wget "https://docs.google.com/uc?export=download&confirm=t&id=1lmhJYiJJq9n_UzzMBT6AXjc6dG2XdvQx" -O "${{ github.workspace }}/src/facematch/models/arcface_model_new.onnx"
+          wget "https://docs.google.com/uc?export=download&confirm=t&id=1dHQe81U5hhxJGKBeqzy3QUtp7NNs0H4R" -O "${{ github.workspace }}/src/facematch/models/retinaface_resnet50.onnx"
+          wget "https://docs.google.com/uc?export=download&confirm=t&id=1A7syAtoqUuwtpxBeRiYtRhr0d3H81weR" -O "${{ github.workspace }}/src/facematch/models/yolov8-face-detection.onnx"
+
+      - name: Cache ONNX models
+        uses: actions/cache@v3
+        with:
+          path: src/facematch/models  # Caches all models in this directory
+          key: onnx-models-${{ hashFiles('src/facematch/models/*') }}
+
       - name: Run unit tests
         run: |
           chroma run --path ./ &
