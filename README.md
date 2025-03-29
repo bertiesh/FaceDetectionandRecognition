@@ -143,7 +143,7 @@ _Run below command from root directory of project._
 chroma run --path ./resources/data
 ```
 
-### Start the server
+### Start the FaceMatch server
 ```
 python -m src.facematch.face_match_server
 ```
