@@ -50,7 +50,7 @@ class TestUploadEmbeddingToDatabase(unittest.TestCase):
         # Remove the collection if it exists for the test
         try:
             self.client.delete_collection(f"{self.collection_name}_{self.model_name}")
-        except:
+        except Exception:
             pass
 
         upload_embedding_to_database(self.test_data, self.collection_name)
@@ -62,7 +62,7 @@ class TestUploadEmbeddingToDatabase(unittest.TestCase):
         # Clean up the temporary collection
         try:
             self.client.delete_collection(f"{self.collection_name}_{self.model_name}")
-        except:
+        except Exception:
             pass
 
 

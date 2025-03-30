@@ -211,7 +211,7 @@ def detect_with_retinaface(image_path=None, img_rgb=None, model_path=None, confi
     img_input = prepare_retinaface_input(img_rgb)
     
     # Load model
-    session_options = ort.SessionOptions()
+    # session_options = ort.SessionOptions()
     providers = ['CPUExecutionProvider']
     try:
         session = ort.InferenceSession(model_path, providers=providers)

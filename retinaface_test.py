@@ -5,7 +5,6 @@ import cv2
 
 from src.facematch.utils.retinaface_utils import (
     detect_with_retinaface, 
-    process_retinaface_detections,
     create_square_bounds_from_landmarks,
     crop_face_for_embedding,
     normalize_face,

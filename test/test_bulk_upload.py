@@ -28,7 +28,7 @@ class TestBulkUpload(unittest.TestCase):
     def tearDown(self):
         try:
             self.client.delete_collection(f"{self.collection_name}_{self.model_name.lower()}")
-        except:
+        except Exception:
             pass
 
 if __name__ == "__main__":
