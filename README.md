@@ -117,7 +117,7 @@ python -m src.Sample_Client.sample_bulk_upload_client --directory_paths <path_to
 ```
 Note: The name of the collection could be a new collection you wish to create or an existing collection you wish to upload to.
 
-_Run with Sample images directory: (Requires absolute path of directory)_
+_Run with Sample images directory:_
 
 ```
 python -m src.Sample_Client.sample_bulk_upload_client --directory_paths ./resources/sample_db --collection_name test
@@ -133,7 +133,7 @@ python -m src.Sample_Client.sample_find_face_client --file_paths <path_to_image>
 > The default similarity threshold, 0.45 is used if no similarity threshold is provided.
 
 
-_Run with Sample test image: (Requires absolute path of image)_
+_Run with Sample test image:_
 
 ```
 python -m src.Sample_Client.sample_find_face_client --file_paths ./resources/test_image.jpg --collection_name test --similarity_threshold 0.5
@@ -151,7 +151,7 @@ python -m src.Sample_Client.sample_find_face_bulk_client --query_directory <path
 > The default similarity threshold, 0.45 is used if no similarity threshold is provided.
 
 
-_Run with Sample test image: (Requires absolute path of image)_
+_Run with Sample test image:_
 
 ```
 python -m src.Sample_Client.sample_find_face_bulk_client --query_directory ./resources/sample_queries --collection_name test --similarity_threshold 0.5
