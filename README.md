@@ -120,7 +120,9 @@ Note: The name of the collection could be a new collection you wish to create or
 _Run with Sample images directory: (Requires absolute path of directory)_
 
 ```
-python -m src.Sample_Client.sample_bulk_upload_client --directory_paths <path_to_project>\resources\sample_db --collection_name test
+python -m src.Sample_Client.sample_bulk_upload_client --directory_paths ./resources/sample_db --collection_name test
+
+# On Windows: python -m src.Sample_Client.sample_bulk_upload_client --directory_paths .\resources\sample_db --collection_name test
 ```
 
 ### Task 2: Find matching faces for single image
@@ -134,7 +136,9 @@ python -m src.Sample_Client.sample_find_face_client --file_paths <path_to_image>
 _Run with Sample test image: (Requires absolute path of image)_
 
 ```
-python -m src.Sample_Client.sample_find_face_client --file_paths <path_to_project>\resources\test_image.jpg --collection_name test --similarity_threshold 0.5
+python -m src.Sample_Client.sample_find_face_client --file_paths ./resources/test_image.jpg --collection_name test --similarity_threshold 0.5
+
+# On Windows: python -m src.Sample_Client.sample_find_face_client --file_paths .\resources\test_image.jpg --collection_name test --similarity_threshold 0.5
 ```
 
 The correct match for the test image should be outputted with the filename Bill_Belichick_0002
@@ -150,10 +154,12 @@ python -m src.Sample_Client.sample_find_face_bulk_client --query_directory <path
 _Run with Sample test image: (Requires absolute path of image)_
 
 ```
-python -m src.Sample_Client.sample_find_face_bulk_client --query_directory <path_to_project>\resources\sample_queries --collection_name test --similarity_threshold 0.5
+python -m src.Sample_Client.sample_find_face_bulk_client --query_directory ./resources/sample_queries --collection_name test --similarity_threshold 0.5
+
+# On Windows: python -m src.Sample_Client.sample_find_face_bulk_client --query_directory .\resources\sample_queries --collection_name test --similarity_threshold 0.5
 ```
 
-Console output will show query filename followed by the found matches file names. Ideally, the queries and matches line up for the first three and the last three have no matches.
+Console output will show query filename followed by the found matches file names. The first three images (the ones named Bill) have a match in the database, and the last three do not.
 
 ## Rescue-Box frontend
 
