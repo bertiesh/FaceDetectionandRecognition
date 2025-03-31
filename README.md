@@ -189,6 +189,8 @@ python -m src.facematch.face_match_server
 
 # Metrics and Testing
 
+**DISCLAIMER**: The following results are from a previous version of the FaceMatch project. New final evaluation results are still being gathered as performance and accuracy improvements are being explored and implemented. The below results do not reflect the current state of the project.
+
 We conduct a series of experiments to evaluate the performance and accuracy of FaceMatch. The experiments are conducted on a dataset of 1,680 images of people from the Labelled Faces in the Wild (LFW) dataset. 
 
 We evaluate FaceMatch using the following metrics:
