@@ -1,7 +1,5 @@
 import os
 import cv2
-import numpy as np
-import onnxruntime as ort
 from deepface import DeepFace
 from src.facematch.utils.embedding_utils import get_arcface_embedding
 from scipy.spatial.distance import cosine

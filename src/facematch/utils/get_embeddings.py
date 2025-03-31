@@ -1,5 +1,4 @@
 # built-in dependencies
-from typing import Any, Dict, List, Union
 
 # 3rd party dependencies
 import numpy as np
@@ -16,17 +15,17 @@ def get_embedding(face_img, model_name, normalization: str = "base",):
     onnx_model_path = ""
     ort_session = None
     if model_name == "ArcFace":
-        onnx_model_path = "arcface_model.onnx"
+        onnx_model_path = "../arcface_model.onnx"
     elif model_name == "Facenet512":
-        onnx_model_path = "facenet512_model.onnx"
+        onnx_model_path = "../facenet512_model.onnx"
     elif model_name == "GhostFaceNet":
-        onnx_model_path = "ghostfacenet_v1.onnx"
+        onnx_model_path = "../ghostfacenet_v1.onnx"
     if onnx_model_path != "":
         ort_session = ort.InferenceSession(onnx_model_path)
     model = None
     if model_name == "SFace":
         try:
-            weight_file = "face_recognition_sface_2021dec.onnx"
+            weight_file = "../face_recognition_sface_2021dec.onnx"
             model = cv2.FaceRecognizerSF.create(
                 model=weight_file, config="", backend_id=0, target_id=0
             )
@@ -44,25 +43,29 @@ def get_embedding(face_img, model_name, normalization: str = "base",):
         target_size = ort_session.get_inputs()[0].shape[1:3]
     log_info(f"target_size: {target_size}")
 
-    factor_0 = target_size[0] / face_img.shape[0]
-    factor_1 = target_size[1] / face_img.shape[1]
-    factor = min(factor_0, factor_1)
+    # factor_0 = target_size[0] / face_img.shape[0]
+    # factor_1 = target_size[1] / face_img.shape[1]
+    # factor = min(factor_0, factor_1)
 
-    dsize = (
-        int(face_img.shape[1] * factor),
-        int(face_img.shape[0] * factor),
-    )
-    diff_0 = target_size[0] - face_img.shape[0]
-    diff_1 = target_size[1] - face_img.shape[1]
-    face_img = np.pad(
-        face_img,
-        (
-            (diff_0 // 2, diff_0 - diff_0 // 2),
-            (diff_1 // 2, diff_1 - diff_1 // 2),
-            (0, 0),
-        ),
-        "constant",
-    )
+    # dsize = (
+    #   int(face_img.shape[1] * factor),
+    #   int(face_img.shape[0] * factor),
+    # )
+    # Resize and pad the image to target_size
+    if face_img.shape[0] > target_size[0] or face_img.shape[1] > target_size[1]:
+        face_img = cv2.resize(face_img, target_size)
+    else:
+        diff_0 = target_size[0] - face_img.shape[0]
+        diff_1 = target_size[1] - face_img.shape[1]
+        face_img = np.pad(
+            face_img,
+            (
+                (diff_0 // 2, diff_0 - diff_0 // 2),
+                (diff_1 // 2, diff_1 - diff_1 // 2),
+                (0, 0),
+            ),
+            "constant",
+        )
 
     if face_img.shape[0:2] != target_size:
         face_img = cv2.resize(face_img, target_size)
@@ -85,18 +88,19 @@ def get_embedding(face_img, model_name, normalization: str = "base",):
             log_info(f"Embedding shape: {embeddings.shape}")
             # log_info(f"Embedding type: {type(embeddings)}")
             # embedding = embeddings[0].tolist()
-            embedding = embeddings[0][0]
+            embedding = embeddings[0].tolist()
             # embedding = embeddings[0].reshape(-1)
             log_info(f"Embedding type: {type(embedding)}")
         except Exception as e:
             log_info(f"Failed to run inference: {str(e)}")
     else: # Facenet512, ArcFace, GhostFaceNet
         input_name = ort_session.get_inputs()[0].name
+        log_info(f"Input name: {input_name}")
         try:
             result = ort_session.run(None, {input_name: img})
         except Exception as e:
             log_info(f"Failed to run inference: {str(e)}")
-        log_info(f"Result: {result[0][0]}")
+        # log_info(f"Result: {result[0][0]}")
         # embedding = result[0].flatten()
         # log_info(f"Embedding shape: {embedding.shape}")
         # log_info(f"Embedding type: {type(embedding)}")
