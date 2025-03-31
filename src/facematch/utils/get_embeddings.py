@@ -1,4 +1,5 @@
 # built-in dependencies
+import os
 
 # 3rd party dependencies
 import numpy as np
@@ -13,19 +14,22 @@ from src.facematch.utils import preprocessing
 def get_embedding(face_img, model_name, normalization: str = "base",):
     """Extract embedding using ArcFace ONNX model with NHWC format"""
     onnx_model_path = ""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(script_dir)
+    models_dir = os.path.join(parent_dir, "models")
     ort_session = None
     if model_name == "ArcFace":
-        onnx_model_path = "../arcface_model.onnx"
+        onnx_model_path = os.path.join(models_dir, "arcface_model.onnx")
     elif model_name == "Facenet512":
-        onnx_model_path = "../facenet512_model.onnx"
+        onnx_model_path = os.path.join(models_dir, "facenet512_model.onnx")
     elif model_name == "GhostFaceNet":
-        onnx_model_path = "../ghostfacenet_v1.onnx"
+        onnx_model_path = os.path.join(models_dir, "ghostfacenet_v1.onnx")
     if onnx_model_path != "":
         ort_session = ort.InferenceSession(onnx_model_path)
     model = None
     if model_name == "SFace":
         try:
-            weight_file = "../face_recognition_sface_2021dec.onnx"
+            weight_file = os.path.join(models_dir, "face_recognition_sface_2021dec.onnx")
             model = cv2.FaceRecognizerSF.create(
                 model=weight_file, config="", backend_id=0, target_id=0
             )
