@@ -90,7 +90,7 @@ with open(output_csv_path, 'w', newline='') as csvfile:
 
 query_paths = os.listdir(args.query_directory)
 query_paths.sort()
-for match_paths, query_path in zip(results, query_paths[99:601]):
+for match_paths, query_path in zip(results, query_paths):
     query_name = os.path.basename(query_path)
     match_paths = " ".join(list(map(lambda path: os.path.basename(path),match_paths)))
     with open(output_csv_path, 'a', newline='') as csvfile:

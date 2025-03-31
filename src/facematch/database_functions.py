@@ -9,6 +9,9 @@ def get_collection(collection, model_name, client):
     return client.get_or_create_collection(name=f"{collection}_{model_name.lower()}", metadata={
         "image_path": "Original path of the uploaded image",
         "hnsw:space": "cosine",
+        "hnsw:construction_ef": 750,
+        "hnsw:search_ef": 750,
+        "hnsw:M": 256
     })
 
 def upload_embedding_to_database(data, collection):
@@ -69,7 +72,6 @@ def query(collection, data, n_results, threshold):
 
 
 def query_bulk(collection, data, n_results, threshold):
-    
     vectors_per_query = np.array(list(map(lambda query: len(query), data)))
     vectors_per_query_idx = np.cumsum(vectors_per_query)[:-1]
 

@@ -10,7 +10,7 @@ from src.facematch.utils.resource_path import (get_config_path, get_resource_pat
 class TestMatchFace(unittest.TestCase):
 
     def setUp(self):
-        self.image_directory_path = get_resource_path("sample_images")
+        self.image_directory_path = get_resource_path("sample_db")
         self.collection_name = "sample"
         self.image_file_path = get_resource_path("test_image.jpg")
         self.client = chromadb.HttpClient(host='localhost', port=8000)
@@ -28,7 +28,7 @@ class TestMatchFace(unittest.TestCase):
             self.image_file_path, threshold=None, collection_name=self.collection_name
         )
         self.assertEqual(1, len(matching_images))
-        self.assertEqual("me.png", os.path.basename(matching_images[0]))
+        self.assertEqual("Bill_Belichick_0002.jpg", os.path.basename(matching_images[0]))
 
     def tearDown(self):
         try:

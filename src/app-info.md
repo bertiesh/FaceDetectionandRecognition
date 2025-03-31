@@ -4,7 +4,7 @@ FaceMatch is an advanced system designed for identifying facial matches within a
 
 ## 1. Creating a Database of Individuals
 
-To populate a database with images, utilize the **Upload Images to Database** endpoint.
+To populate a database with images, utilize the **Upload Images to Collection in ChromaDB** endpoint.
 
 ### Inputs
 
@@ -12,13 +12,13 @@ To populate a database with images, utilize the **Upload Images to Database** en
 
     - For multiple directories, repeat the upload process sequentially, ensuring that each previous directory has been successfully added before proceeding.
 
-- **Choose database:** A dropdown menu to select either an existing database to upload the images to or the option to create a new database.
+- **Choose collection:** A dropdown menu to select either an existing collection to upload the images to or the option to create a new collection.
 
-- **New Database Name (Optional):** A text input field to enter the name for the new database. 
+- **New Collection Name (Optional):** A text input field to enter the name for the new collection. Don't include underscores.
 
 > NOTE: 
-> Use only if you would like to create a new database.
-> Ensure that the "Create a new database" option is selected in 'Choose database' dropdown.
+> Use only if you would like to create a new collection.
+> Ensure that the "Create a new collection" option is selected in 'Choose Collection' dropdown.
 
 ### Outputs
 
@@ -26,13 +26,13 @@ To populate a database with images, utilize the **Upload Images to Database** en
 
 ## 2. Search for matches 
 
-- To search for facial matches within the existing database, use the **Find Matching Faces** endpoint.
+- To search for facial matches within the existing database, use the **Find Matching Faces for Single Image** endpoint.
 
 ### Inputs
 
-- **Image Path:** A query image to be compared against the database.
+- **Image Directory:** A query image to be compared against the database.
 
-- **Database Name:** Choose the database to search within.
+- **Collection Name:** Choose the collection to search within.
 
 - **Similarity Threshold:** A threshold value to determine the minimum similarity score required for a match to be considered a positive match. 
 
@@ -50,4 +50,18 @@ Default value provides a tradeoff between two things, it tries to ensure we find
 
 ### Outputs 
 
-- Refer to the results section for the matches found within the database.
+- Refer to the results section for the matches found within the database. May have to click dropdown arrow to view.
+
+## 3. Search for matches for multiple images at once
+
+### Inputs
+
+ - **Query Directory** Path to directory of query images to be compared against the database.
+
+ - **Collection Name:** Choose the collection to search within
+
+ - **Similarity Threshold:** A threshold value to determine the minimum similarity score required for a match to be considered a positive match. 
+
+ ### Outputs 
+
+- Refer to the results section. Current output is the doubly nested array of outputs where each subarray contains the matches for each query. Empty array indicates no matches found. Further changes to Rescuebox likely required to flesh out this output.
