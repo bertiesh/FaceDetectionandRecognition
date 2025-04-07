@@ -30,5 +30,8 @@ chroma.log
 /visualization
 debug_faces
 
+/test_results
+/benchmark_testing/resources
+
 results-csv/
 output-csv-dump/
