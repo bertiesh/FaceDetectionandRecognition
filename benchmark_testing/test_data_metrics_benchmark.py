@@ -66,18 +66,18 @@ N = [1, 5, 10]
 
 for top_n, n in zip(top_n, N):
     # csv output files directory
-    output_directory = os.getenv("OUTPUT_CSV_DIRECTORY")
+    output_directory = os.getenv("OUTPUT_CSV_PATH")
 
     # benchmark results file path
-    benchmark_results_path = os.getenv("BENCHMARK_RESULTS_PATH")+f'_{top_n}.csv'
+    benchmark_results_path = os.path.join(os.getenv("RESULTS_CSV_PATH"), f'results_{top_n}.csv')
 
     # Sample csv path
     # file_path = "<path to dataset folder>\\LFWdataset\\output.csv"
-
     with open(benchmark_results_path, 'w', newline='') as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(['model', 'similarity threshold', 'accuracy', 'precision', 'recall', 'f1', 'tpr', 'fpr', 'tnr', 'fnr'])
 
+    # import pdb; pdb.set_trace()
     for filename in os.listdir(output_directory):
         if not filename.endswith('.csv'):
             continue
@@ -90,9 +90,10 @@ for top_n, n in zip(top_n, N):
         midpoint = len(data) // 2
 
         # Set `true_label` column
-        data["true_label"] = [True]*400 + [False]*100
+        data["true_label"] = [True]*3 + [False]*3 #[True]*400 + [False]*100
 
         # Apply the function to each row to create a 'predicted' column with boolean values
+        
         data["predicted"] = data.apply(lambda row: check_match(row, n), axis=1)
         tpr, fpr, tnr, fnr = calculate_tpr_fpr(data["true_label"], data["predicted"])
 

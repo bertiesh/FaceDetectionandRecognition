@@ -1,14 +1,14 @@
 import argparse
-import chromadb
 
 from flask_ml.flask_ml_client import MLClient
 from flask_ml.flask_ml_server.models import BatchFileInput, Input
 
 # Define the URL and set up client
 IMAGE_MATCH_MODEL_URL = "http://127.0.0.1:5000/findface"
-client = MLClient(IMAGE_MATCH_MODEL_URL)
+LIST_COLLECTIONS_URL = "http://127.0.0.1:5000/listcollections"
+findFaceClient = MLClient(IMAGE_MATCH_MODEL_URL)
+listCollectionsClient = MLClient(LIST_COLLECTIONS_URL)
 
-DBclient = chromadb.HttpClient(host='localhost', port=8000)
 
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="To parse text arguments")
@@ -32,7 +32,8 @@ parser.add_argument(
 args = parser.parse_args()
 
 # Check if collection exists
-collections = DBclient.list_collections()
+collections = listCollectionsClient.request({},{})['texts']
+collections = [output['value'] for output in collections]
 
 if args.collection_name not in map(lambda c: c.split("_")[0],collections):
     print("Collection does not exist")
@@ -52,7 +53,7 @@ inputs = {
 }
 
 # Response from server
-response = client.request(inputs, parameters)
+response = findFaceClient.request(inputs, parameters)
 
 # Show results to user
 
