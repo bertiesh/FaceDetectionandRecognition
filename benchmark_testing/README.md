@@ -10,6 +10,18 @@ The dataset for testing can be found at [Dataset](https://drive.google.com/file/
 
 ---
 
+## Single file run benchmark code
+- set up .env in root directory with the following variables
+    - DATABASE_DIRECTORY = path to directory of images to be uploaded to database
+    - QUERIES_DIRECTORY = path to directory of images to be queried
+    - OUTPUT_CSV_PATH = path to query/match output csv files. Final folder must be named 'output-csv-dump'
+    - RESULTS_CSV_PATH = path to calculated accuracy results files and time measurement file. Final folder must be named 'results-csv'
+    - TIME_CSV_PATH = path to time measurement file.
+- set detector and embedding model in model_config.json, and DB settings in db_config.json
+- cd benchmark_testing
+- run `benchmark.sh`
+- Choose prompts on whether to clear past files. First option is for results files containing queries and their matches. Second option is for results files containing calculated metrics.
+
 ## Folder Structure
 - **`test_data_setup.py`**  
   Prepares the test dataset by randomly selecting one image per person for upload and one image for testing. The input directory should be a recursive directory such that each directory contains different images of the same person. It outputs two directories:

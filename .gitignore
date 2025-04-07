@@ -29,3 +29,6 @@ chroma.log
 /debug_detections
 /visualization
 debug_faces
+
+results-csv/
+output-csv-dump/
