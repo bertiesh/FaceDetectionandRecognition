@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 
-from src.facematch.utils.embedding_utils import get_arcface_embedding
+from src.facematch.utils.get_embeddings import get_embedding
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, 
@@ -631,7 +631,8 @@ def process_yolo_detections(img, boxes, scores, landmarks, align=True, target_si
         
         # Generate embedding
         try:
-            embedding = get_arcface_embedding(detection, model_onnx_path)
+            
+            embedding  = get_embedding(detection, model_name)
                                 
             if embedding is not None:
 

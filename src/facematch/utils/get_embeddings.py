@@ -19,7 +19,7 @@ def get_embedding(face_img, model_name, normalization: str = "base",):
     models_dir = os.path.join(parent_dir, "models")
     ort_session = None
     if model_name == "ArcFace":
-        onnx_model_path = os.path.join(models_dir, "arcface_model.onnx")
+        onnx_model_path = os.path.join(models_dir, "arcface_model_new.onnx")
     elif model_name == "Facenet512":
         onnx_model_path = os.path.join(models_dir, "facenet512_model.onnx")
     elif model_name == "GhostFaceNet":
