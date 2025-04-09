@@ -17,17 +17,21 @@ class TestBulkUpload(unittest.TestCase):
         with open(config_path, "r") as config_file:
             config = json.load(config_file)
         self.model_name = config["model_name"]
+        self.detector = config["detector_backend"]
 
     def test_bulk_upload_success(self):
         face_match_object = FaceMatchModel()
-        result = face_match_object.bulk_upload(
+        face_match_object.bulk_upload(
             self.image_directory_path, self.collection_name
         )
-        self.assertEqual("12", result.split(" ")[2])
+
+        num_img = self.client.get_collection(f"{self.collection_name}_{self.detector}_{self.model_name.lower()}").count()
+
+        self.assertEqual(12, num_img)
 
     def tearDown(self):
         try:
-            self.client.delete_collection(f"{self.collection_name}_{self.model_name.lower()}")
+            self.client.delete_collection(f"{self.collection_name}_{self.detector}_{self.model_name.lower()}")
         except Exception:
             pass
 

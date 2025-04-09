@@ -17,12 +17,13 @@ with open(model_config_path, "r") as config_file:
     model_config = json.load(config_file)
 
 detector_backend = model_config["detector_backend"]
+model_name = model_config["model_name"]
 space = db_config["hnsw:space"]
 construction_ef = db_config["hnsw:construction_ef"]
 search_ef = db_config["hnsw:search_ef"]
 M = db_config["hnsw:M"]
 
-def get_collection(collection, model_name, client):
+def get_collection(collection, client):
     return client.get_or_create_collection(name=f"{collection}_{detector_backend.lower()}_{model_name.lower()}", metadata={
         "image_path": "Original path of the uploaded image",
         "hnsw:space": space,
@@ -35,11 +36,9 @@ def upload_embedding_to_database(data, collection):
     df = pd.DataFrame(data)
     df["bbox"] = df["bbox"].apply(lambda x: ",".join(map(str, x)))
 
-    model_name = df["model_name"].iloc[0]
-
     metadatas = [{"image_path":d["image_path"]} for d in data]
 
-    collection = get_collection(collection, model_name, client)
+    collection = get_collection(collection, client)
 
     collection.add(
         embeddings=list(df['embedding']),
@@ -49,7 +48,7 @@ def upload_embedding_to_database(data, collection):
 
 def query(collection, data, n_results, threshold):
     query_vectors = [image["embedding"] for image in data]
-    collection = get_collection(collection, data[0]["model_name"], client)
+    collection = get_collection(collection, client)
     
     result = collection.query(
         query_embeddings=query_vectors,
@@ -94,7 +93,7 @@ def query_bulk(collection, data, n_results, threshold, similarity_filter):
 
     query_vectors = [face["embedding"] for query in data for face in query]
 
-    collection = get_collection(collection, data[0][0]["model_name"], client)
+    collection = get_collection(collection, client)
 
     result = collection.query(
         query_embeddings=query_vectors,
