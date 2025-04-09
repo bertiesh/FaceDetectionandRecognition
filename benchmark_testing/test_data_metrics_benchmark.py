@@ -185,10 +185,10 @@ for top_n, n in zip(top_n, N):
 
         # Calculate TP, FP, TN, FN properly
         true_positives = sum((data["true_label"]) & (data["predicted"]) & (data["is_correct"]))
-        false_positives = sum((not data["true_label"]) & (data["predicted"]))
-        true_negatives = sum((not data["true_label"]) & (not data["predicted"]))
-        false_negatives = sum((data["true_label"]) & ((not data["predicted"]) | 
-                                                            ((data["predicted"]) & (not data["is_correct"]))))
+        false_positives = sum((~data["true_label"]) & (data["predicted"]))
+        true_negatives = sum((~data["true_label"]) & (~data["predicted"]))
+        false_negatives = sum((data["true_label"]) & ((~data["predicted"]) | 
+                                                            ((data["predicted"]) & (~data["is_correct"]))))
 
         # Calculate metrics based on the properly counted values
         precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
