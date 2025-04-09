@@ -1,11 +1,10 @@
 # built-in dependencies
-from typing import Any, Dict, List, Union
+import os
 
 # 3rd party dependencies
 import numpy as np
 import cv2
 import onnxruntime as ort
-from tensorflow.keras.preprocessing import image
 
 # project dependencies
 from src.facematch.utils.logger import log_info
@@ -14,19 +13,22 @@ from src.facematch.utils import preprocessing
 def get_embedding(face_img, model_name, normalization: str = "base",):
     """Extract embedding using ArcFace ONNX model with NHWC format"""
     onnx_model_path = ""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(script_dir)
+    models_dir = os.path.join(parent_dir, "models")
     ort_session = None
     if model_name == "ArcFace":
-        onnx_model_path = "/Users/xyx/Documents/spring2025/596E/Face/FaceDetectionandRecognition/arcface_model.onnx"
+        onnx_model_path = os.path.join(models_dir, "arcface_model.onnx")
     elif model_name == "Facenet512":
-        onnx_model_path = "../facenet512_model.onnx"
+        onnx_model_path = os.path.join(models_dir, "facenet512_model.onnx")
     elif model_name == "GhostFaceNet":
-        onnx_model_path = "../ghostfacenet_v1.onnx"
+        onnx_model_path = os.path.join(models_dir, "ghostfacenet_v1.onnx")
     if onnx_model_path != "":
         ort_session = ort.InferenceSession(onnx_model_path)
     model = None
     if model_name == "SFace":
         try:
-            weight_file = "../face_recognition_sface_2021dec.onnx"
+            weight_file = os.path.join(models_dir, "face_recognition_sface_2021dec.onnx")
             model = cv2.FaceRecognizerSF.create(
                 model=weight_file, config="", backend_id=0, target_id=0
             )
@@ -44,14 +46,6 @@ def get_embedding(face_img, model_name, normalization: str = "base",):
         target_size = ort_session.get_inputs()[0].shape[1:3]
     log_info(f"target_size: {target_size}")
 
-    factor_0 = target_size[0] / face_img.shape[0]
-    factor_1 = target_size[1] / face_img.shape[1]
-    factor = min(factor_0, factor_1)
-
-    dsize = (
-        int(face_img.shape[1] * factor),
-        int(face_img.shape[0] * factor),
-    )
     # Resize and pad the image to target_size
     if face_img.shape[0] > target_size[0] or face_img.shape[1] > target_size[1]:
         face_img = cv2.resize(face_img, target_size)
@@ -68,12 +62,11 @@ def get_embedding(face_img, model_name, normalization: str = "base",):
             "constant",
         )
 
-
     if face_img.shape[0:2] != target_size:
         face_img = cv2.resize(face_img, target_size)
     
     # normalizing the image pixels
-    img = image.img_to_array(face_img)
+    img = cv2.cvtColor(face_img, cv2.COLOR_BGR2RGB).astype("float32")
     img = np.expand_dims(img, axis=0)
     img /= 255  # normalize input in [0, 1]
     
