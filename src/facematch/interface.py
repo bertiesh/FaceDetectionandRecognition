@@ -190,13 +190,13 @@ class FaceMatchModel:
                 num_embeddings = len(all_embedding_outputs)
                 
                 if num_embeddings % query_batch_size == 0 and num_embeddings != 0:
-                    matching_image_paths = query_bulk(collection_name, img_files, all_embedding_outputs, 10, threshold, similarity_filter)
+                    matching_image_paths = query_bulk(collection_name, all_embedding_outputs, 10, threshold, similarity_filter)
                     all_embedding_outputs = []
                     all_matching_image_paths.extend(matching_image_paths)
                     log_info(f"Query: {img_files[idx - num_embeddings+1]}  Match: {matching_image_paths[0]}")
 
             if len(all_embedding_outputs) != 0:
-                    matching_image_paths = query_bulk(collection_name, img_files, all_embedding_outputs, 10, threshold, similarity_filter)
+                    matching_image_paths = query_bulk(collection_name, all_embedding_outputs, 10, threshold, similarity_filter)
                     all_matching_image_paths.extend(matching_image_paths)
             
 

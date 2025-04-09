@@ -215,6 +215,8 @@ class FindFaceBulkTestingParameters(TypedDict):
 
 
 # Endpoint that is used to find matches to a set of query images
+# Does not filter by the similarity theshold and returns all results with similarity scores, file paths and
+# face index within given query (if multiple faces found in the query, are the results for face 0, 1, etc.)
 @server.route(
     "/findfacebulktesting",
     order=5,
@@ -327,6 +329,7 @@ def bulk_upload_endpoint(
 class DeleteCollectionInputs(TypedDict):
     collection_name: TextInput
     model_name: TextInput
+    detector_backend: TextInput
 
 
 class DeleteCollectionParameters(TypedDict):
@@ -346,12 +349,13 @@ def delete_collection_endpoint(
     try:
         collection_name = inputs["collection_name"].text
         model_name = inputs["model_name"].text.lower()
-        DBclient.delete_collection(f"{collection_name}_{model_name}")
-        responseValue = f'Successfully deleted {collection_name}_{model_name}'
+        detector_backend = inputs["detector_backend"].text.lower()
+        DBclient.delete_collection(f"{collection_name}_{detector_backend}_{model_name}")
+        responseValue = f'Successfully deleted {collection_name}_{detector_backend}_{model_name}'
         log_info(responseValue)
     except Exception:
-        responseValue = f'Collection {collection_name}_{model_name} does not exist.'
-        log_info(responseValue)        
+        responseValue = f'Collection {collection_name}_{detector_backend}_{model_name} does not exist.'
+        log_info(responseValue)   
 
     return ResponseBody(root=TextResponse(value=responseValue))
 
@@ -364,7 +368,7 @@ class ListCollectionsInputs(TypedDict):
 class ListCollectionsParameters(TypedDict):
     pass
 
-# Endpoint for deleting collections from ChromaDB
+# Endpoint for listing all ChromaDB collections
 @server.route(
     "/listcollections",
     order=4,

@@ -8,17 +8,22 @@ from src.facematch.utils.resource_path import get_config_path
 client = chromadb.HttpClient(host='localhost', port=8000)
 
 # Get models from config file.
-config_path = get_config_path("db_config.json")
-with open(config_path, "r") as config_file:
-    config = json.load(config_file)
+db_config_path = get_config_path("db_config.json")
+with open(db_config_path, "r") as config_file:
+    db_config = json.load(config_file)
 
-space = config["hnsw:space"]
-construction_ef = config["hnsw:construction_ef"]
-search_ef = config["hnsw:search_ef"]
-M = config["hnsw:M"]
+model_config_path = get_config_path("model_config.json")
+with open(model_config_path, "r") as config_file:
+    model_config = json.load(config_file)
+
+detector_backend = model_config["detector_backend"]
+space = db_config["hnsw:space"]
+construction_ef = db_config["hnsw:construction_ef"]
+search_ef = db_config["hnsw:search_ef"]
+M = db_config["hnsw:M"]
 
 def get_collection(collection, model_name, client):
-    return client.get_or_create_collection(name=f"{collection}_{model_name.lower()}", metadata={
+    return client.get_or_create_collection(name=f"{collection}_{detector_backend.lower()}_{model_name.lower()}", metadata={
         "image_path": "Original path of the uploaded image",
         "hnsw:space": space,
         "hnsw:construction_ef": construction_ef,
@@ -83,7 +88,7 @@ def query(collection, data, n_results, threshold):
     return top_img_paths
 
 
-def query_bulk(collection, query_paths, data, n_results, threshold, similarity_filter):
+def query_bulk(collection, data, n_results, threshold, similarity_filter):
     vectors_per_query = np.array(list(map(lambda query: len(query), data)))
     vectors_per_query_idx = np.cumsum(vectors_per_query)[:-1]
 

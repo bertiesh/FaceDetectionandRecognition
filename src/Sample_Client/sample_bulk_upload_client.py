@@ -30,8 +30,8 @@ args = parser.parse_args()
 
 # Dropdown collection path is used to give the option of creating a new collection and selecting an existing collection for users in frontend
 # Set dropdown collection path to the name of the collection if it exists, otherwise set it to "Create a new collection"
-collections = listCollectionsClient.request({},{})['texts']
-collections = [output['value'] for output in collections]
+collections_response = listCollectionsClient.request({},{})
+collections = [output['value'] for output in collections_response['texts']]
 
 if args.collection_name in map(lambda c: c.split("_")[0],collections):
     dropdown_collection_name = args.collection_name
@@ -52,7 +52,7 @@ inputs = {
                 ]
             }
         )
-    )
+    ) 
 }
 
 # Response from the server

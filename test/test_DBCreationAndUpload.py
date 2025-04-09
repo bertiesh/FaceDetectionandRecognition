@@ -9,6 +9,7 @@ class TestUploadEmbeddingToDatabase(unittest.TestCase):
     def setUp(self):
         # Sample data for testing
         self.model_name = "fake_model"
+        self.detector = "fake_detector"
         self.test_data = [
             {
                 "image_path": "test/data/img1.png",

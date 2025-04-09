@@ -2,6 +2,7 @@ import argparse
 import csv
 import os
 import pandas as pd
+import numpy as np
 import time
 from dotenv import load_dotenv
 import ast
@@ -69,27 +70,30 @@ parser.add_argument(
     "--collection_name", required=True, type=str, help="Name of the collection file"
 )
 
-# Name of model from user
+# benchmark results path
 parser.add_argument(
-    "--model_name", required=False, type=str, help="Name of the model file"
+    "--results_path", required=False, type=str, help="Parent Results directory", default="."
+)
+
+# results_name
+parser.add_argument(
+    "--results_name", required=False, type=str, help="Name of results output", default="results"
 )
 
 args = parser.parse_args()
 
-similarity_thresholds =(st for st in range(0.3, 0.8, 0.05))
+similarity_thresholds =(round(st,2) for st in np.arange(0.3, 0.8, 0.05))
 
-if not args.model_name:
-    module_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.abspath(
-        os.path.join(module_dir, os.pardir)
-    )
-    FACEMATCH_DIR = os.path.join(project_root, "src", "facematch")
-    model_config_path = os.path.join(FACEMATCH_DIR, "config", "model_config.json")
-    with open(model_config_path, "r") as config_file:
-        config = json.load(config_file)
-    model_name = config["model_name"]
-else:
-    model_name = args.model_name
+module_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(
+    os.path.join(module_dir, os.pardir)
+)
+FACEMATCH_DIR = os.path.join(project_root, "src", "facematch")
+model_config_path = os.path.join(FACEMATCH_DIR, "config", "model_config.json")
+with open(model_config_path, "r") as config_file:
+    config = json.load(config_file)
+model_name = config["model_name"]
+detector_backend = config["detector_backend"]
 
 
 # Bulk query and measure time
@@ -100,7 +104,9 @@ end_time = time.time()
 elapsed_time = end_time - start_time
 print(f"Time taken for face find bulk: {elapsed_time}")
 
-times_csv_path = os.getenv('TIME_CSV_PATH')
+abs_results_path = os.path.abspath(args.results_path)
+times_csv_path = os.path.join(abs_results_path, f"{detector_backend}-{model_name}-{args.results_name}" , "times.csv")
+
 with open(times_csv_path, 'a', newline='') as csvfile:
     csvwriter = csv.writer(csvfile)
     csvwriter.writerow(['bulk_face_find', elapsed_time])
@@ -126,10 +132,10 @@ for st in similarity_thresholds:
         paths = group.loc[group['similarity'] >= st, 'img_path'].tolist()
         return paths if paths else []
 
-    top_img_paths = df.groupby('query_idx', sort=False).apply(filter_by_similarity).tolist()
+    top_img_paths = df.groupby('query_idx', sort=False, group_keys=False).apply(filter_by_similarity, include_groups=False).tolist()
 
-    output_csv_path = os.path.join(os.getcwd(),'output-csv-dump', f'{model_name}_{st}.csv')
-
+    output_csv_path = os.path.join(abs_results_path, f"{detector_backend}-{model_name}-{args.results_name}",'output-csv-dump', f'{detector_backend}_{model_name}_{st}.csv')
+    os.makedirs(os.path.dirname(output_csv_path), exist_ok=True)
     with open(output_csv_path, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(['filename', 'result'])
