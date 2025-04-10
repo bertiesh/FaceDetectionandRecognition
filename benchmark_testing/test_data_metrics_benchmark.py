@@ -222,7 +222,7 @@ for top_n, n in zip(top_n, N):
             for i, row in data.iterrows():
                 expected = "Yes" if row["true_label"] else "No"
                 found = "Yes" if row["predicted"] else "No"
-                correct = "✓" if row["is_correct"] else "✗"
+                correct = "YES" if row["is_correct"] else "NO"
                 
                 # Get the matched names for display
                 matched_names = ""
