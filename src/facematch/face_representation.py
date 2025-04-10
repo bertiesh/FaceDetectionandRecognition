@@ -41,6 +41,8 @@ def detect_faces_and_get_embeddings(
 
     if model_name == "ArcFace":
         model_onnx_path = os.path.join(models_dir, "arcface_model_new.onnx")
+    elif model_name == "Facenet512":
+        model_onnx_path = os.path.join(models_dir, "facenet512_model.onnx")
         
     if visualize:
         os.makedirs("debug_detections", exist_ok=True)

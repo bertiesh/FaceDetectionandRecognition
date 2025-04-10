@@ -1,14 +1,13 @@
 import argparse
-import chromadb
 
 from flask_ml.flask_ml_client import MLClient
 from flask_ml.flask_ml_server.models import BatchDirectoryInput, Input
 
 # Define the URL and set up client
 BULK_UPLOAD_MODEL_URL = "http://127.0.0.1:5000/bulkupload"
-client = MLClient(BULK_UPLOAD_MODEL_URL)
-
-DBclient = chromadb.HttpClient(host='localhost', port=8000)
+bulkUploadClient = MLClient(BULK_UPLOAD_MODEL_URL)
+LIST_COLLECTIONS_URL = "http://127.0.0.1:5000/listcollections"
+listCollectionsClient = MLClient(LIST_COLLECTIONS_URL)
 
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="To parse text arguments")
@@ -31,7 +30,8 @@ args = parser.parse_args()
 
 # Dropdown collection path is used to give the option of creating a new collection and selecting an existing collection for users in frontend
 # Set dropdown collection path to the name of the collection if it exists, otherwise set it to "Create a new collection"
-collections = DBclient.list_collections()
+collections_response = listCollectionsClient.request({},{})
+collections = [output['value'] for output in collections_response['texts']]
 
 if args.collection_name in map(lambda c: c.split("_")[0],collections):
     dropdown_collection_name = args.collection_name
@@ -52,10 +52,10 @@ inputs = {
                 ]
             }
         )
-    )
+    ) 
 }
 
 # Response from the server
-response = client.request(inputs, parameters)
+response = bulkUploadClient.request(inputs, parameters)
 print("Bulk Upload model response")
 print(response, "\n")

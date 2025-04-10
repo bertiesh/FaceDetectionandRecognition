@@ -4,7 +4,8 @@ import logging
 import os
 import onnxruntime as ort
 
-from src.facematch.utils.embedding_utils import get_arcface_embedding
+from src.facematch.utils.get_embeddings import get_embedding
+
 
 logger = logging.getLogger(__name__)
 
@@ -575,7 +576,7 @@ def process_retinaface_detections(img, align, target_size, normalization, visual
                 if isinstance(detection, np.ndarray):
                     cv2.imwrite(face_path, cv2.cvtColor(detection, cv2.COLOR_RGB2BGR))
 
-            embedding = get_arcface_embedding(detection, model_onnx_path)
+            embedding  = get_embedding(detection, model_name)
                                 
             if embedding is not None:
 

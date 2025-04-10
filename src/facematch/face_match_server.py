@@ -4,7 +4,8 @@ import chromadb
 from typing import List, TypedDict
 
 from flask_ml.flask_ml_server import MLServer, load_file_as_string
-from flask_ml.flask_ml_server.models import (BatchDirectoryInput, BatchFileInput,
+from flask_ml.flask_ml_server.models import (TextInput, BatchTextResponse,
+                                             BatchDirectoryInput, BatchFileInput,
                                              DirectoryInput, BatchFileResponse,
                                              EnumParameterDescriptor, EnumVal,
                                              FileResponse,
@@ -204,6 +205,41 @@ def find_face_bulk_endpoint(
 
     return ResponseBody(root=TextResponse(value=str(results)))
 
+# Inputs and parameters for the findfacebulk endpoint
+class FindFaceBulkTestingInputs(TypedDict):
+    query_directory: DirectoryInput
+
+
+class FindFaceBulkTestingParameters(TypedDict):
+    collection_name: str
+
+
+# Endpoint that is used to find matches to a set of query images
+# Does not filter by the similarity theshold and returns all results with similarity scores, file paths and
+# face index within given query (if multiple faces found in the query, are the results for face 0, 1, etc.)
+@server.route(
+    "/findfacebulktesting",
+    order=5,
+)
+def find_face_bulk_testing_endpoint(
+    inputs: FindFaceBulkTestingInputs, parameters: FindFaceBulkTestingParameters
+) -> ResponseBody:
+
+    # Check CUDNN compatability
+    check_cuDNN_version()
+
+    # Call model function to find matches
+    status, results = face_match_model.find_face_bulk(
+        inputs["query_directory"].path,
+        None,
+        parameters["collection_name"],
+        similarity_filter=False
+    )
+    log_info(status)
+
+    return ResponseBody(root=TextResponse(value=str(results)))
+
+
 
 
 # Frontend Task Schema defining inputs and paraneters that users can enter
@@ -287,6 +323,72 @@ def bulk_upload_endpoint(
             if parameters["collection_name"] not in available_collections:
                 available_collections.append(new_collection_name)
     return ResponseBody(root=TextResponse(value=response))
+
+
+# Inputs and parameters for the bulkupload endpoint
+class DeleteCollectionInputs(TypedDict):
+    collection_name: TextInput
+    model_name: TextInput
+    detector_backend: TextInput
+
+
+class DeleteCollectionParameters(TypedDict):
+    pass
+
+# Endpoint for deleting collections from ChromaDB
+@server.route(
+    "/deletecollection",
+    order=3,
+)
+def delete_collection_endpoint(
+    inputs: DeleteCollectionInputs, parameters: DeleteCollectionParameters
+) -> ResponseBody:
+    
+    responseValue = ""
+
+    try:
+        collection_name = inputs["collection_name"].text
+        model_name = inputs["model_name"].text.lower()
+        detector_backend = inputs["detector_backend"].text.lower()
+        DBclient.delete_collection(f"{collection_name}_{detector_backend}_{model_name}")
+        responseValue = f'Successfully deleted {collection_name}_{detector_backend}_{model_name}'
+        log_info(responseValue)
+    except Exception:
+        responseValue = f'Collection {collection_name}_{detector_backend}_{model_name} does not exist.'
+        log_info(responseValue)   
+
+    return ResponseBody(root=TextResponse(value=responseValue))
+
+
+# Inputs and parameters for the bulkupload endpoint
+class ListCollectionsInputs(TypedDict):
+    pass
+
+
+class ListCollectionsParameters(TypedDict):
+    pass
+
+# Endpoint for listing all ChromaDB collections
+@server.route(
+    "/listcollections",
+    order=4,
+)
+def list_collections_endpoint(
+    inputs: ListCollectionsInputs, parameters: ListCollectionsParameters
+) -> ResponseBody:
+    
+    responseValue = None
+
+    try:
+        responseValue = DBclient.list_collections()
+        log_info(responseValue)
+    except Exception:
+        responseValue = ['Failed to List Collections']
+        log_info(responseValue)        
+
+    return ResponseBody(root=BatchTextResponse(texts=[TextResponse(value=collection) for collection in responseValue]))
+
+
 
 
 server.run()

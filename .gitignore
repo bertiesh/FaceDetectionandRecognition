@@ -29,3 +29,9 @@ chroma.log
 /debug_detections
 /visualization
 debug_faces
+
+/test_results
+/benchmark_testing/resources
+
+benchmark-results/
+

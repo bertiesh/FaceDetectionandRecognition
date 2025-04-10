@@ -1,28 +1,44 @@
 import pandas as pd
 import numpy as np
-
 import chromadb
+import json
+
+from src.facematch.utils.resource_path import get_config_path
 
 client = chromadb.HttpClient(host='localhost', port=8000)
 
-def get_collection(collection, model_name, client):
-    return client.get_or_create_collection(name=f"{collection}_{model_name.lower()}", metadata={
+# Get models from config file.
+db_config_path = get_config_path("db_config.json")
+with open(db_config_path, "r") as config_file:
+    db_config = json.load(config_file)
+
+model_config_path = get_config_path("model_config.json")
+with open(model_config_path, "r") as config_file:
+    model_config = json.load(config_file)
+
+detector_backend = model_config["detector_backend"]
+model_name = model_config["model_name"]
+space = db_config["hnsw:space"]
+construction_ef = db_config["hnsw:construction_ef"]
+search_ef = db_config["hnsw:search_ef"]
+M = db_config["hnsw:M"]
+
+def get_collection(collection, client):
+    return client.get_or_create_collection(name=f"{collection}_{detector_backend.lower()}_{model_name.lower()}", metadata={
         "image_path": "Original path of the uploaded image",
-        "hnsw:space": "cosine",
-        "hnsw:construction_ef": 750,
-        "hnsw:search_ef": 750,
-        "hnsw:M": 256
+        "hnsw:space": space,
+        "hnsw:construction_ef": construction_ef,
+        "hnsw:search_ef": search_ef,
+        "hnsw:M": M
     })
 
 def upload_embedding_to_database(data, collection):
     df = pd.DataFrame(data)
     df["bbox"] = df["bbox"].apply(lambda x: ",".join(map(str, x)))
 
-    model_name = df["model_name"].iloc[0]
-
     metadatas = [{"image_path":d["image_path"]} for d in data]
 
-    collection = get_collection(collection, model_name, client)
+    collection = get_collection(collection, client)
 
     collection.add(
         embeddings=list(df['embedding']),
@@ -32,7 +48,7 @@ def upload_embedding_to_database(data, collection):
 
 def query(collection, data, n_results, threshold):
     query_vectors = [image["embedding"] for image in data]
-    collection = get_collection(collection, data[0]["model_name"], client)
+    collection = get_collection(collection, client)
     
     result = collection.query(
         query_embeddings=query_vectors,
@@ -71,13 +87,13 @@ def query(collection, data, n_results, threshold):
     return top_img_paths
 
 
-def query_bulk(collection, data, n_results, threshold):
+def query_bulk(collection, data, n_results, threshold, similarity_filter):
     vectors_per_query = np.array(list(map(lambda query: len(query), data)))
     vectors_per_query_idx = np.cumsum(vectors_per_query)[:-1]
 
     query_vectors = [face["embedding"] for query in data for face in query]
 
-    collection = get_collection(collection, data[0][0]["model_name"], client)
+    collection = get_collection(collection, client)
 
     result = collection.query(
         query_embeddings=query_vectors,
@@ -121,11 +137,19 @@ def query_bulk(collection, data, n_results, threshold):
     result_df = result_df.sort_values(by=["query_index", "face_idx", "similarity"], ascending=[True, True, False])
 
     # Function to filter paths based on similarity threshold, but keep an empty list if none qualify
-    def extract_paths(group):
+    def filter_by_similarity(group):
         paths = group.loc[group['similarity'] >= threshold, 'img_path'].tolist()
         return paths if paths else []
-
+    
+    # Function to return all results with their similarities as an array of dictionaries for testing purposes
+    def extract_paths(group):
+        paths = group.loc[:, ['similarity', 'img_path', 'face_idx']].to_dict(orient='records')
+        return paths if paths else []
+    
     # Group by 'index' and extract paths while preserving order
-    top_img_paths = result_df.groupby('query_index', sort=False).apply(extract_paths).tolist()
+    if similarity_filter:
+        top_img_paths = result_df.groupby('query_index', sort=False).apply(filter_by_similarity).tolist()
+    else:
+        top_img_paths = result_df.groupby('query_index', sort=False).apply(extract_paths).tolist()
 
     return top_img_paths
