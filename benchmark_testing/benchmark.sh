@@ -49,7 +49,7 @@ queries_directory="$QUERIES_DIRECTORY"
 #
 #**************************************************************************************
 
-MODEL_CONFIG="$MODEL_CONFIG"
+MODEL_CONFIG=$(python construct_paths.py --path_name model_config)
 
 MODEL_NAME="ArcFace" # Default model name
 DETECTOR_NAME="yolov8" # Default detector name

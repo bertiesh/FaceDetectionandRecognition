@@ -30,7 +30,10 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-if args.path_name == 'times_csv':
+if args.path_name == 'model_config':
+    path = os.path.join(os.path.dirname(os.getcwd()),'src','facematch','config','model_config.json')
+    print(path)
+elif args.path_name == 'times_csv':
     abs_results_path = os.path.abspath(args.results_path)
     path = os.path.join(abs_results_path, f"{args.detector}-{args.embedding}-{args.results_name}" , "times.csv")
     print(path)
