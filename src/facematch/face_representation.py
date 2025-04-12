@@ -6,9 +6,10 @@ import onnxruntime as ort
 import logging
 
 from src.facematch.utils.yolo_utils import (get_target_size, process_yolov8_output,
-                                            process_yolov9_output, process_yolo11_output, visualize_detections, process_yolo_detections)
+                                         visualize_detections, process_yolo_detections)
 
-from src.facematch.utils.retinaface_utils import (detect_with_retinaface, process_retinaface_detections, process_retinaface_detections_for_facenet512)
+from src.facematch.utils.retinaface_utils import (detect_with_retinaface,
+                                            process_retinaface_detections_for_facenet512, process_retinaface_detections_for_arcface)
 from src.facematch.hash import sha256_image
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -32,10 +33,6 @@ def detect_faces_and_get_embeddings(
     # Set detector path based on backend
     if detector_backend == "yolov8":
         detector_onnx_path = os.path.join(models_dir, "yolov8-face-detection.onnx")
-    elif detector_backend == "yolo11":
-        detector_onnx_path = os.path.join(models_dir, "yolo11m.onnx")
-    elif detector_backend == "yolov9":
-        detector_onnx_path = os.path.join(models_dir, "yolov9.onnx")
     elif detector_backend == "retinaface":
         detector_onnx_path = os.path.join(models_dir, "retinaface-resnet50.onnx")
 
@@ -70,33 +67,7 @@ def detect_faces_and_get_embeddings(
         target_size = get_target_size(model_name)
         original_size = (img.shape[1], img.shape[0])
 
-        if detector_backend == "retinaface" and model_name == "Facenet512":
-            boxes, scores, landmarks = detect_with_retinaface(
-                image_path=image_path if isinstance(image_path, str) else None,
-                img_rgb=img if not isinstance(image_path, str) else None,
-                model_path=detector_onnx_path,
-                confidence_threshold=0.02,
-                visualize=visualize
-            )
-            
-            # Modify how faces are extracted for this specific combination
-            face_embeddings = process_retinaface_detections_for_facenet512(
-                img, align, target_size, normalization, visualize, 
-                image_path, model_name, model_onnx_path, path_str, 
-                boxes, scores, landmarks
-            )
-            
-            # Add these critical lines to properly return the result
-            for result in face_embeddings:
-                image = sha256_image(result["image_path"], result["bbox"])
-                result["sha256_image"] = image
-                result["model_name"] = model_name
-            
-            if len(face_embeddings) > 0:
-                return True, face_embeddings
-            return False, []
-
-        elif detector_backend == "retinaface" and model_name != "Facenet512":
+        if detector_backend == "retinaface":
             try:
                 boxes, scores, landmarks = detect_with_retinaface(
                     image_path=image_path if isinstance(image_path, str) else None,
@@ -106,7 +77,18 @@ def detect_faces_and_get_embeddings(
                     visualize=visualize
                 )
                 
-                face_embeddings = process_retinaface_detections(img, align, target_size, normalization, visualize, image_path, model_name, model_onnx_path, path_str, boxes, scores, landmarks)
+                if model_name == "Facenet512":
+                    # Facenet512 pipeline
+                    face_embeddings = process_retinaface_detections_for_facenet512(
+                        img, align, target_size, normalization, visualize, image_path, 
+                        model_name, model_onnx_path, path_str, boxes, scores, landmarks
+                    )
+                elif model_name == "ArcFace":
+                    # ArcFace-optimized pipeline
+                    face_embeddings = process_retinaface_detections_for_arcface(
+                        img, align, target_size, normalization, visualize, image_path, 
+                        model_name, model_onnx_path, path_str, boxes, scores, landmarks
+                    )
                 
                 for result in face_embeddings:
                     image = sha256_image(result["image_path"], result["bbox"])
@@ -144,7 +126,8 @@ def detect_faces_and_get_embeddings(
         
         # YOLO preprocessing
         letterbox_info = None
-        if detector_backend in ["yolov8", "yolo11", "yolov9"]:
+        if detector_backend == "yolov8":
+
             scale = min(input_size[0] / original_size[0], input_size[1] / original_size[1])
             new_w = int(original_size[0] * scale)
             new_h = int(original_size[1] * scale)
@@ -160,14 +143,11 @@ def detect_faces_and_get_embeddings(
             img_input = np.expand_dims(img_norm.transpose(2, 0, 1), axis=0)
         
             outputs = detector_session.run(None, {input_name: img_input})
-            
-            if detector_backend == 'yolov8':
-                # Use the modified process_yolov8_output that creates square boxes
-                boxes, scores, landmarks = process_yolov8_output(outputs, letterbox_info, height_factor)
-            elif detector_backend == "yolov9":
-                boxes, scores, landmarks = process_yolov9_output(outputs, letterbox_info)
-            elif detector_backend == "yolo11":
-                boxes, scores, landmarks = process_yolo11_output(outputs, letterbox_info)
+
+            if model_name == "ArcFace":
+                height_factor = 1.3
+                
+            boxes, scores, landmarks = process_yolov8_output(outputs, letterbox_info, height_factor)
 
             # Visualize detections
             if visualize and isinstance(image_path, str) and len(boxes) > 0:

@@ -35,3 +35,7 @@ debug_faces
 
 benchmark-results/
 
+debug_retinaface_facenet512.py
+debug_yolov8_facenet512.py
+detector_test.py
+face-detection-test-script.py
