@@ -82,7 +82,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-similarity_thresholds =(round(st,2) for st in np.arange(0.3, 0.8, 0.05))
+similarity_thresholds =(round(st,2) for st in np.arange(0.40, 0.80, 0.02))
 
 module_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(
