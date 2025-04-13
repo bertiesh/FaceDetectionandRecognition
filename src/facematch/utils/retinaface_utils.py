@@ -702,8 +702,8 @@ def optimize_arcface_alignment(face, img, region):
         
         # ArcFace eye position target - 112x112 model expects eyes at specific positions
         # These values are optimized for ArcFace's expected eye positions
-        desired_left_eye_x = 0.3
-        desired_eye_y = 0.4
+        # desired_left_eye_x = 0.3
+        # desired_eye_y = 0.4
         
         h, w = face.shape[:2]
         
