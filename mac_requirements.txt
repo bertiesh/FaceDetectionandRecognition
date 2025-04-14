@@ -1,7 +1,5 @@
 flask-ml==0.2.5
 retina-face==0.0.13
 ruff
-ultralytics
 onnxruntime
 chromadb
-protobuf==3.20.3
