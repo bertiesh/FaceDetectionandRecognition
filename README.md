@@ -64,13 +64,11 @@ conda activate facematch-env
 ```
 conda install the following:
 ```
-conda install -c conda-forge numpy=1.24.3
-conda install -c conda-forge tensorflow=2.10.0
 conda install -c conda-forge pandas
-conda install -c pytorch faiss-cpu
 conda install -c conda-forge opencv
 conda install -c conda-forge scikit-learn
 conda install -c conda-forge onnxruntime
+conda install matplotlib
 ```
 install the remaining dependencies:
 ```
