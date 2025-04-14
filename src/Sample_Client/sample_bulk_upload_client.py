@@ -1,14 +1,13 @@
 import argparse
-import os
 
 from flask_ml.flask_ml_client import MLClient
 from flask_ml.flask_ml_server.models import BatchDirectoryInput, Input
 
-from src.facematch.utils.resource_path import get_resource_path
-
 # Define the URL and set up client
 BULK_UPLOAD_MODEL_URL = "http://127.0.0.1:5000/bulkupload"
-client = MLClient(BULK_UPLOAD_MODEL_URL)
+bulkUploadClient = MLClient(BULK_UPLOAD_MODEL_URL)
+LIST_COLLECTIONS_URL = "http://127.0.0.1:5000/listcollections"
+listCollectionsClient = MLClient(LIST_COLLECTIONS_URL)
 
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="To parse text arguments")
@@ -22,24 +21,27 @@ parser.add_argument(
     help="Path to directory containing images",
 )
 
-# Name of database from user
+# Name of embedding collection from user
 parser.add_argument(
-    "--database_name", required=True, type=str, help="Name of the database file"
+    "--collection_name", required=True, type=str, help="Name of the embedding collection"
 )
 
 args = parser.parse_args()
 
-# Dropdown database path is used to give the option of creating a new database and selecting an existing database for users in frontend
-# Set dropdown database path to the name of the database if it exists, otherwise set it to "Create a new database"
-if os.path.exists(get_resource_path((args.database_name + ".csv"))):
-    dropdown_database_name = args.database_name
+# Dropdown collection path is used to give the option of creating a new collection and selecting an existing collection for users in frontend
+# Set dropdown collection path to the name of the collection if it exists, otherwise set it to "Create a new collection"
+collections_response = listCollectionsClient.request({},{})
+collections = [output['value'] for output in collections_response['texts']]
+
+if args.collection_name in map(lambda c: c.split("_")[0],collections):
+    dropdown_collection_name = args.collection_name
 else:
-    dropdown_database_name = "Create a new database"
+    dropdown_collection_name = "Create a new collection"
 
 # Set parameters and inputs for the request
 parameters = {
-    "database_name": args.database_name,
-    "dropdown_database_name": dropdown_database_name,
+    "collection_name": args.collection_name,
+    "dropdown_collection_name": dropdown_collection_name,
 }
 inputs = {
     "directory_paths": Input(
@@ -50,10 +52,10 @@ inputs = {
                 ]
             }
         )
-    )
+    ) 
 }
 
 # Response from the server
-response = client.request(inputs, parameters)
+response = bulkUploadClient.request(inputs, parameters)
 print("Bulk Upload model response")
 print(response, "\n")

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 
-from src.facematch.utils.embedding_utils import get_arcface_embedding
+from src.facematch.utils.get_embeddings import get_embedding
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, 
@@ -54,32 +54,54 @@ def get_target_size(model_name):
     """Get target size based on the embedding model"""
     if model_name == "Facenet512":
         return (160, 160)
-    elif model_name == "OpenFace":
-        return (96, 96)
-    elif model_name in ["DeepFace", "DeepID"]:
-        return (152, 152)
-    elif model_name in ["ArcFace", "SFace"]:
+    elif model_name == "ArcFace":
         return (112, 112)
-    elif model_name == "Dlib":
-        return (150, 150)
     else:
         return (224, 224)
 
+def crop_face_for_facenet_embedding(face_img):
+
+    if face_img is None or face_img.size == 0:
+        return None
+
+    h, w = face_img.shape[:2]
+    ratio = h / w
+
+    # Calculate crop margins
+    top_margin = int(h * 0.12)      # 12% from top
+    bottom_margin = int(h * 0.2)  # 20% from bottom
+    left_margin = int(w * 0.16 / ratio)     # 16% from left
+    right_margin = int(w * 0.16 / ratio)    # 16% from right
+
+    y_start = top_margin
+    y_end = h - bottom_margin
+    x_start = left_margin
+    x_end = w - right_margin
+
+    # Ensure valid dimensions
+    if y_end <= y_start or x_end <= x_start:
+        return face_img
+
+    cropped_face = face_img[y_start:y_end, x_start:x_end]
+
+    return cropped_face
+
 
 def crop_face_for_embedding(face_img):
-   
+    """
+    Crop a face image to prepare it for embedding, ensuring a square output.
+    """
     if face_img is None or face_img.size == 0:
         return None
         
     h, w = face_img.shape[:2]
     
-    # Calculate crop margins
-    top_margin = int(h * 0.1)      # 0% from top
-    bottom_margin = int(h * 0.2)  # 20% from bottom
-    left_margin = int(w * 0.15)     # 10% from left
-    right_margin = int(w * 0.15)    # 10% from right
+    top_margin = int(h * 0.12)      # 12% from top
+    bottom_margin = int(h * 0.15)   # 15% from bottom
+    left_margin = int(w * 0.10)     # 10% from left
+    right_margin = int(w * 0.10)    # 10% from right
     
-    # Apply cropping
+    # Calculate initial cropping coordinates
     y_start = top_margin
     y_end = h - bottom_margin
     x_start = left_margin
@@ -87,8 +109,56 @@ def crop_face_for_embedding(face_img):
     
     # Ensure valid dimensions
     if y_end <= y_start or x_end <= x_start:
-        return face_img
+        # If invalid crop dimensions, keep original but make square
+        center_x = w // 2
+        center_y = h // 2
+        side_length = min(w, h)
+        
+        x_start = max(0, center_x - side_length // 2)
+        y_start = max(0, center_y - side_length // 2)
+        x_end = min(w, x_start + side_length)
+        y_end = min(h, y_start + side_length)
+        
+        return face_img[y_start:y_end, x_start:x_end]
     
+    # Calculate dimensions of initially cropped area
+    crop_h = y_end - y_start
+    crop_w = x_end - x_start
+    
+    # Make it square by using the smaller dimension
+    if crop_h != crop_w:
+        if crop_h > crop_w:
+            # Height is larger, center vertically
+            diff = crop_h - crop_w
+            y_start += diff // 2
+            y_end = y_start + crop_w
+        else:
+            # Width is larger, center horizontally
+            diff = crop_w - crop_h
+            x_start += diff // 2
+            x_end = x_start + crop_h
+    
+    y_start = max(0, y_start)
+    y_end = min(h, y_end)
+    x_start = max(0, x_start)
+    x_end = min(w, x_end)
+    
+    final_size = min(y_end - y_start, x_end - x_start)
+    center_y = (y_start + y_end) // 2
+    center_x = (x_start + x_end) // 2
+    
+    y_start = max(0, center_y - final_size // 2)
+    y_end = min(h, y_start + final_size)
+    x_start = max(0, center_x - final_size // 2)
+    x_end = min(w, x_start + final_size)
+    
+    # Check if we need to adjust again due to boundary constraints
+    if y_end - y_start != x_end - x_start:
+        final_size = min(y_end - y_start, x_end - x_start)
+        y_end = y_start + final_size
+        x_end = x_start + final_size
+    
+    # Apply cropping
     cropped_face = face_img[y_start:y_end, x_start:x_end]
     
     return cropped_face
@@ -171,8 +241,6 @@ def process_yolov8_output(outputs, letterbox_info=None, height_factor=1.25):
     for box in initial_boxes:
         x1, y1, x2, y2 = box
         
-        # Current dimensions
-        # current_width = x2 - x1
         current_height = y2 - y1
         
         # Apply height factor to expand height
@@ -182,7 +250,6 @@ def process_yolov8_output(outputs, letterbox_info=None, height_factor=1.25):
         center_x = (x1 + x2) / 2
         center_y = (y1 + y2) / 2
         
-        # Use the expanded height as the side length for the square
         side_length = expanded_height
         
         # Calculate new coordinates to make a square box
@@ -205,228 +272,13 @@ def process_yolov8_output(outputs, letterbox_info=None, height_factor=1.25):
     return square_boxes, scores, landmarks
 
 
-def process_yolov9_output(outputs, letterbox_info=None):
-    """Process YOLOv9 grid-based output format
-    
-    YOLOv9 has outputs in the format:
-    - First output (1, 5, 8400): Box predictions
-    - Second output (1, 5, 8400): Class predictions
-    - Other outputs: Feature maps
-    """
-    boxes, scores, landmarks = [], [], []
-    
-    try:
-        # Standard YOLOv9 format: first two outputs are boxes and classes
-        boxes_output = outputs[0][0]  # Shape (5, 8400)
-        classes_output = outputs[1][0]  # Shape (5, 8400)
-        
-        # num_classes = classes_output.shape[0]
-        num_detections = boxes_output.shape[1]
-                
-        valid_detections = 0
-        
-        # Transpose for easier processing (8400, 5)
-        boxes_output = boxes_output.transpose()
-        classes_output = classes_output.transpose()
-        
-        for i in range(num_detections):
-            x_center, y_center, width, height, confidence = boxes_output[i]
-            
-            class_scores = classes_output[i]
-            class_id = int(np.argmax(class_scores))
-            class_confidence = float(class_scores[class_id])
-            
-            combined_confidence = float(confidence * class_confidence)
-            final_confidence = min(1.0, combined_confidence / 300.0)  # Scale down very high values
-            
-            if final_confidence < 0.3:
-                continue
-            
-            valid_detections += 1
-            
-            # Convert center format to corner format
-            x1 = x_center - width / 2
-            y1 = y_center - height / 2
-            x2 = x_center + width / 2
-            y2 = y_center + height / 2
-            
-            # Adjust for letterbox
-            if letterbox_info:
-                scale = letterbox_info["scale"]
-                pad_w = letterbox_info["pad_w"]
-                pad_h = letterbox_info["pad_h"]
-                
-                # Remove padding and rescale
-                x1 = (x1 - pad_w) / scale
-                y1 = (y1 - pad_h) / scale
-                x2 = (x2 - pad_w) / scale
-                y2 = (y2 - pad_h) / scale
-                
-                # Clip to image boundaries
-                orig_w, orig_h = letterbox_info["orig_size"]
-                x1 = max(0, min(orig_w, x1))
-                y1 = max(0, min(orig_h, y1))
-                x2 = max(0, min(orig_w, x2))
-                y2 = max(0, min(orig_h, y2))
-            
-            width = x2 - x1
-            height = y2 - y1
-            
-            # Check if this is likely a body detection (height > 2*width)
-            is_body = height > 2 * width
-            
-            if is_body:
-                # For body detections, extract just the face
-                face_height = height * 0.2  # Take top 20% of body height
-                face_width = min(width, face_height)
-                face_center_x = (x1 + x2) / 2
-                face_top = y1 + height * 0.02  # Small offset from very top
-                
-                # Calculate new face coordinates
-                new_x1 = face_center_x - face_width/2
-                new_y1 = face_top
-                new_x2 = face_center_x + face_width/2
-                new_y2 = face_top + face_height
-            else:
-                new_x1 = x1
-                new_y1 = y1
-                new_x2 = x2
-                new_y2 = y2
-            
-            # Ensure coordinates are valid
-            new_x1 = max(0, new_x1)
-            new_y1 = max(0, new_y1)
-            if letterbox_info:
-                orig_w, orig_h = letterbox_info["orig_size"]
-                new_x2 = min(orig_w, new_x2)
-                new_y2 = min(orig_h, new_y2)
-            
-            # Save detection
-            boxes.append([new_x1, new_y1, new_x2, new_y2])
-            scores.append(final_confidence)
-            landmarks.append(None)
-        
-        # Apply non-maximum suppression to filter overlapping boxes
-        if len(boxes) > 1:
-            try:
-                import cv2
-                indices = cv2.dnn.NMSBoxes(
-                    boxes, scores, score_threshold=0.3, nms_threshold=0.45
-                )
-                
-                filtered_boxes = [boxes[i] for i in indices]
-                filtered_scores = [scores[i] for i in indices]
-                filtered_landmarks = [landmarks[i] for i in indices]
-                
-                boxes, scores, landmarks = filtered_boxes, filtered_scores, filtered_landmarks
-            except Exception as e:
-                logger.error(f"Error applying NMS: {e}")
-                        
-    except Exception as e:
-        logger.error(f"Error processing YOLOv9 output: {str(e)}", exc_info=True)
-        return [], [], []
-    
-    return boxes, scores, landmarks
-
-
-def process_yolo11_output(outputs, letterbox_info=None):
-    """Process YOLOv11 output with enhanced face extraction from body detections"""
-    boxes, scores, landmarks = [], [], []
-    
-    # Get detections array
-    detections = outputs[0]
-    
-    logger.info(f"Processing {len(detections[0])} YOLOv11 detections")
-    
-    valid_count = 0
-    for detection in detections[0]:
-        # Extract values
-        x1, y1, x2, y2, confidence, class_id = detection
-        
-        # Usually class 0 is person and class 1 might be face, adjust based on your model
-        if int(class_id) not in [0] or confidence < 0.3:
-            continue
-            
-        valid_count += 1
-        
-        x1, y1, x2, y2 = float(x1), float(y1), float(x2), float(y2)
-        
-        # Adjust for letterbox
-        if letterbox_info:
-            scale = letterbox_info["scale"]
-            pad_w = letterbox_info["pad_w"]
-            pad_h = letterbox_info["pad_h"]
-            
-            # Remove padding and rescale
-            x1 = (x1 - pad_w) / scale
-            y1 = (y1 - pad_h) / scale
-            x2 = (x2 - pad_w) / scale
-            y2 = (y2 - pad_h) / scale
-            
-            # Clip to image boundaries
-            orig_w, orig_h = letterbox_info["orig_size"]
-            x1 = max(0, min(orig_w, x1))
-            y1 = max(0, min(orig_h, y1))
-            x2 = max(0, min(orig_w, x2))
-            y2 = max(0, min(orig_h, y2))
-        
-        # Calculate box dimensions
-        width, height = x2 - x1, y2 - y1
-        
-        # Check if this is likely a body detection (height > 2*width)
-        is_body = height > 2 * width
-        
-        if is_body:
-            # For body detections, extract just the face
-            face_height = height * 0.2  # Take top 20% of body height
-            
-            face_width = min(width, face_height)
-
-            face_center_x = (x1 + x2) / 2
-            
-            face_top = y1 + height * 0.02  # Small offset from very top
-            
-            new_x1 = face_center_x - face_width/2
-            new_y1 = face_top
-            new_x2 = face_center_x + face_width/2
-            new_y2 = face_top + face_height
-        else:
-            top_margin = height * 0.1     # Trim 10% from top
-            bottom_margin = height * 0.3  # Trim 30% from bottom
-            left_margin = width * 0.2     # Trim 20% from left
-            right_margin = width * 0.2    # Trim 20% from right
-            
-            new_x1 = x1 + left_margin
-            new_y1 = y1 + top_margin
-            new_x2 = x2 - right_margin
-            new_y2 = y2 - bottom_margin
-        
-        # Ensure coordinates are valid
-        new_x1 = max(0, new_x1)
-        new_y1 = max(0, new_y1)
-        if letterbox_info:
-            orig_w, orig_h = letterbox_info["orig_size"]
-            new_x2 = min(orig_w, new_x2)
-            new_y2 = min(orig_h, new_y2)
-        
-        # Save detection
-        boxes.append([new_x1, new_y1, new_x2, new_y2])
-        scores.append(float(confidence))
-        landmarks.append(None)
-    
-    logger.info(f"Found {valid_count} valid detections, processed to {len(boxes)} face regions")
-    return boxes, scores, landmarks
-
-
 def extract_face(img, box, landmark, detector_backend):
     """Extract face region based on bounding box"""
     img_height, img_width = img.shape[:2]
     
-    # Parse box coordinates - handle both formats
     if len(box) == 4:
         x1, y1, x2, y2 = map(int, box)
-        # w = x2 - x1
-        # h = y2 - y1
+        
     else:
         logger.warning(f"Invalid box format: {box}")
         return None, None
@@ -458,9 +310,7 @@ def extract_face(img, box, landmark, detector_backend):
     
     # Add landmarks if available
     if landmark is not None:
-        # We expect landmarks in format: [(x1,y1), (x2,y2), ...]
         if len(landmark) >= 2:
-            # First two points are usually left eye, right eye
             region["left_eye"] = (int(landmark[0][0]), int(landmark[0][1]))
             region["right_eye"] = (int(landmark[1][0]), int(landmark[1][1]))
     
@@ -532,12 +382,10 @@ def normalize_face(face, target_size, model_name, normalization=True):
     
     # Convert to the expected format based on embedding model
     if model_name == "Facenet512":
-        # FaceNet/FaceNet512 preprocessing
         face_normalized = face_resized.astype(np.float32)
         face_normalized = (face_normalized - 127.5) / 128.0
         
     elif model_name in ["ArcFace", "SFace"]:
-        # ArcFace/SFace preprocessing
         face_normalized = face_resized.astype(np.float32)
         face_normalized = face_normalized / 255.0
         # Standard normalization
@@ -555,7 +403,7 @@ def prepare_for_embedding(face, model_name, normalization):
     """
     Final preparation to make the face compatible with embedding model's expectations
     """
-    # DeepFace's models generally expect uint8 input (0-255)
+    # models generally expect uint8 input (0-255)
     # If we've normalized, we need to convert back
     if normalization and face is not None:
         
@@ -610,16 +458,22 @@ def process_yolo_detections(img, boxes, scores, landmarks, align=True, target_si
         # Align face if landmarks available
         if align and region["left_eye"] is not None and region["right_eye"] is not None:
             face = align_face(face, img, region)
-        
-        # Process for embedding
-        face = crop_face_for_embedding(face)
-        face_normalized = normalize_face(face, target_size, model_name, normalization)
-        if face_normalized is None:
-            continue
+
+        if model_name == "Facenet512":
+            face = crop_face_for_facenet_embedding(face)
+            face_normalized = normalize_face(face, target_size, model_name, normalization)
+            if face_normalized is None:
+                continue
             
-        detection = prepare_for_embedding(face_normalized, model_name, normalization)
-        if detection is None:
-            continue
+            detection = prepare_for_embedding(face_normalized, model_name, normalization)
+            if detection is None:
+                continue
+        
+        elif model_name == "ArcFace":
+            face = crop_face_for_embedding(face)
+            face_resized = cv2.resize(face, target_size)
+            detection = np.clip(face_resized, 0, 255).astype(np.uint8)
+        
 
         # Visualize processed faces
         if visualize and isinstance(image_path, str):
@@ -631,7 +485,8 @@ def process_yolo_detections(img, boxes, scores, landmarks, align=True, target_si
         
         # Generate embedding
         try:
-            embedding = get_arcface_embedding(detection, model_onnx_path)
+            
+            embedding  = get_embedding(detection, model_name)
                                 
             if embedding is not None:
 
