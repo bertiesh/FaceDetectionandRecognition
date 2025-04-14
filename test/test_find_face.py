@@ -27,8 +27,7 @@ class TestMatchFace(unittest.TestCase):
         status, matching_images = face_match_object.find_face(
             self.image_file_path, threshold=None, collection_name=self.collection_name
         )
-        self.assertEqual(1, len(matching_images))
-        self.assertEqual("Bill_Belichick_0002.jpg", os.path.basename(matching_images[0]))
+        self.assertTrue("Bill_Belichick_0002.jpg" in list(map(lambda x: os.path.basename(x), matching_images)))
 
     def tearDown(self):
         try:

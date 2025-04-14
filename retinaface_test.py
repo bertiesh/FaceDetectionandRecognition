@@ -6,7 +6,7 @@ import cv2
 from src.facematch.utils.retinaface_utils import (
     detect_with_retinaface, 
     create_square_bounds_from_landmarks,
-    crop_face_for_embedding,
+    crop_face_for_facenet512,
     normalize_face,
     prepare_for_embedding
 )
@@ -21,7 +21,7 @@ def main():
     model_dir = "src/facematch/models/"
     model_path = os.path.join(model_dir, "retinaface-resnet50.onnx")
     image_paths = [
-        "resources/sample_images/single.jpg",
+        "resources/sample.jpeg",
         # Add more image paths as needed
     ]
     
@@ -82,7 +82,7 @@ def main():
                     # 3. Landmark-based bounding box
                     if landmark and len(landmark) >= 5:
                         landmark_box_viz = img.copy()
-                        improved_box = create_square_bounds_from_landmarks(landmark, img.shape, scale_factor=7.0)
+                        improved_box = create_square_bounds_from_landmarks(landmark, img.shape, scale_factor=3.0)
                         if improved_box:
                             lx1, ly1, lx2, ly2 = improved_box
                             cv2.rectangle(landmark_box_viz, (lx1, ly1), (lx2, ly2), (0, 255, 0), 2)
@@ -101,12 +101,12 @@ def main():
                     steps_viz.append(("4_extracted_face", face_img))
                     
                     # 5. Crop face
-                    cropped_face = crop_face_for_embedding(face)
+                    cropped_face = crop_face_for_facenet512(face)
                     cropped_face_img = cv2.cvtColor(cropped_face, cv2.COLOR_RGB2BGR)
                     steps_viz.append(("5_cropped_face", cropped_face_img))
                     
                     # 6. Normalize face
-                    model_name = "ArcFace"
+                    model_name = "Facenet512"
                     target_size = get_target_size(model_name)
                     normalized_face = normalize_face(cropped_face, target_size, model_name, True)
                     normalized_face_img = cv2.cvtColor((normalized_face * 255).astype(np.uint8), cv2.COLOR_RGB2BGR)

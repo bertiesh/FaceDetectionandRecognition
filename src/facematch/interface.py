@@ -153,7 +153,7 @@ class FaceMatchModel:
         
     # Function that takes in path to image and returns all images that have the same person.
     def find_face_bulk(
-        self, query_directory, threshold=None, collection_name=None
+        self, query_directory, threshold=None, collection_name=None, similarity_filter=True
     ):
         try:
             query_batch_size = 100
@@ -190,17 +190,18 @@ class FaceMatchModel:
                 num_embeddings = len(all_embedding_outputs)
                 
                 if num_embeddings % query_batch_size == 0 and num_embeddings != 0:
-                    matching_image_paths = query_bulk(collection_name, all_embedding_outputs, n_results=10, threshold=threshold)
+                    matching_image_paths = query_bulk(collection_name, all_embedding_outputs, 10, threshold, similarity_filter)
                     all_embedding_outputs = []
                     all_matching_image_paths.extend(matching_image_paths)
                     log_info(f"Query: {img_files[idx - num_embeddings+1]}  Match: {matching_image_paths[0]}")
 
             if len(all_embedding_outputs) != 0:
-                    matching_image_paths = query_bulk(collection_name, all_embedding_outputs, n_results=10, threshold=threshold)
+                    matching_image_paths = query_bulk(collection_name, all_embedding_outputs, 10, threshold, similarity_filter)
                     all_matching_image_paths.extend(matching_image_paths)
-                
             
-            return True, all_matching_image_paths
+
+            results = dict(zip(img_files, all_matching_image_paths))
+            return True, results
             
         except Exception as e:
             return False, f"An error occurred: {str(e)}"

@@ -3,6 +3,7 @@ import os
 import time
 from dotenv import load_dotenv
 import ast
+import pandas as pd
 
 from flask_ml.flask_ml_client import MLClient
 from flask_ml.flask_ml_server.models import DirectoryInput, Input
@@ -32,7 +33,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 # Define the URL and set up client
-IMAGE_MATCH_MODEL_URL = "http://127.0.0.1:5000/findfacebulk"
+IMAGE_MATCH_MODEL_URL = "http://127.0.0.1:5000/findfacebulktesting"
 LIST_COLLECTIONS_URL = "http://127.0.0.1:5000/listcollections"
 findFaceClient = MLClient(IMAGE_MATCH_MODEL_URL)
 listCollectionsClient = MLClient(LIST_COLLECTIONS_URL)
@@ -48,7 +49,6 @@ if args.collection_name not in map(lambda c: c.split("_")[0],collections):
 
 # Set parameters and inputs for the request
 parameters = {
-    "similarity_threshold": args.similarity_threshold,
     "collection_name": args.collection_name,
 }
 
@@ -69,7 +69,29 @@ start_time = time.time()
 response = findFaceClient.request(inputs, parameters)
 try:
     results = ast.literal_eval(response['value'])
-    for query_path, match_paths in results.items():
+    query_results = results.values()
+    data = []
+    for query_idx, query_result in enumerate(results.items()):
+        for face_idx, face in enumerate(query_result[1]):
+            data.append({
+                'similarity': face['similarity'],
+                'query_idx': query_idx,
+                'face_idx': face['face_idx'],
+                'img_path': face['img_path']
+            })
+
+    df = pd.DataFrame(data)
+    # sort results by similarity in descending order
+    df = df.sort_values(by=["query_idx", "face_idx", "similarity"], ascending=[True, True, False])
+
+    # Function to filter paths based on similarity threshold, but keep an empty list if none qualify
+    def filter_by_similarity(group):
+        paths = group.loc[group['similarity'] >= 0.5, 'img_path'].tolist()
+        return paths if paths else []
+    
+    top_img_paths = df.groupby('query_idx', sort=False).apply(filter_by_similarity).tolist()
+
+    for query_path, match_paths in zip(results.keys(), top_img_paths):
         query_name = os.path.basename(query_path)
         match_paths = " ".join(list(map(lambda path: os.path.basename(path),match_paths)))
         print(f"Query: {query_name}    Matches: {match_paths}")
@@ -77,6 +99,8 @@ try:
 except Exception:
     # If response is not an array, print the value
     print(response["value"])
+
+
 
 
 end_time = time.time()
