@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 import logging
 import matplotlib.pyplot as plt
-import logging
 import matplotlib
 matplotlib.use('Agg')
 
@@ -97,7 +96,7 @@ def crop_face_for_embedding(face_img):
 
 def process_yolov8_output(outputs, letterbox_info=None, height_factor=1.25):
     """Process YOLOv8 face detection output in grid format (1, 5, 8400). Creates square bounding boxes and returns them in a format compatible with the rest of the pipeline."""
-    boxes, scores, landmarks = [], [], []
+    scores, landmarks = [], []
     
     # YOLOv8-face in grid format
     output = outputs[0][0]  # Shape (5, 8400)
@@ -173,7 +172,7 @@ def process_yolov8_output(outputs, letterbox_info=None, height_factor=1.25):
         x1, y1, x2, y2 = box
         
         # Current dimensions
-        current_width = x2 - x1
+        # current_width = x2 - x1
         current_height = y2 - y1
         
         # Apply height factor to expand height
@@ -221,7 +220,7 @@ def process_yolov9_output(outputs, letterbox_info=None):
         boxes_output = outputs[0][0]  # Shape (5, 8400)
         classes_output = outputs[1][0]  # Shape (5, 8400)
         
-        num_classes = classes_output.shape[0]
+        # num_classes = classes_output.shape[0]
         num_detections = boxes_output.shape[1]
                 
         valid_detections = 0
@@ -426,8 +425,8 @@ def extract_face(img, box, landmark, detector_backend):
     # Parse box coordinates - handle both formats
     if len(box) == 4:
         x1, y1, x2, y2 = map(int, box)
-        w = x2 - x1
-        h = y2 - y1
+        # w = x2 - x1
+        # h = y2 - y1
     else:
         logger.warning(f"Invalid box format: {box}")
         return None, None

@@ -1,3 +1,8 @@
+from src.facematch.utils.yolo_utils import (get_target_size, process_yolov8_output,
+                                            process_yolov9_output, process_yolo11_output, visualize_detections, process_yolo_detections)
+
+from src.facematch.utils.retinaface_utils import (detect_with_retinaface, process_retinaface_detections)
+
 import os
 import cv2
 import numpy as np
@@ -6,12 +11,6 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-from src.facematch.utils.yolo_utils import (get_target_size, process_yolov8_output,
-                                            process_yolov9_output, process_yolo11_output, visualize_detections, process_yolo_detections)
-
-from src.facematch.utils.retinaface_utils import (detect_with_retinaface, process_retinaface_detections)
-
 
 
 def detect_faces_and_get_embeddings(
