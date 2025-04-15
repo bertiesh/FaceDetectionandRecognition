@@ -48,32 +48,6 @@ pip install -r requirements.txt
 
 In the case that your visual studio build tools are out of date (error in one of the dependency installations), download installer from `https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022` and either update existing tools or modify installer to download necessary build tools (e.g. If C++ build tools are the issue, click desktop development with C++ and install).
 
-## Mac-specific user setup with conda/miniforge
-
-If miniforge is not installed on your machine, please install it as below:
-
-```
-curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh"
-chmod +x Miniforge3-MacOSX-arm64.sh
-./Miniforge3-MacOSX-arm64.sh
-```
-Then set up a conda environment:
-```
-conda create -n facematch-env python=3.10
-conda activate facematch-env
-```
-conda install the following:
-```
-conda install -c conda-forge pandas
-conda install -c conda-forge opencv
-conda install -c conda-forge onnxruntime
-conda install matplotlib
-```
-install the remaining dependencies:
-```
-pip install -r mac_requirements.txt
-```
-
 ---
 ## Download ONNX Models
 

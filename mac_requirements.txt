@@ -1,4 +1,0 @@
-flask-ml==0.2.5
-ruff
-onnxruntime
-chromadb==1.0.4
