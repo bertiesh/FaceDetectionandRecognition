@@ -7,11 +7,8 @@ import cv2
 
 # project dependencies
 from src.facematch.utils import image_utils
-from deepface.modules import detection
 import onnxruntime as ort
 from src.facematch.utils.logger import log_info
-
-from tensorflow.keras.preprocessing import image
 
 def resize_image(img: np.ndarray, target_size: Tuple[int, int]) -> np.ndarray:
     """

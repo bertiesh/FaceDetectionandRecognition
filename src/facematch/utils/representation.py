@@ -7,7 +7,6 @@ import cv2
 import onnxruntime as ort
 
 # project dependencies
-from deepface.modules import detection
 from src.facematch.utils.logger import log_info
 from src.facematch.utils import preprocessing
 

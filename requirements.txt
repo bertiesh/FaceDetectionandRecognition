@@ -1,7 +1,9 @@
 pandas
-scikit-learn
 flask-ml
 ruff
 python-dotenv
 onnxruntime
-chromadb
+chromadb==1.0.4
+matplotlib
+opencv
+numpy

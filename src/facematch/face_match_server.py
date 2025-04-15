@@ -39,7 +39,7 @@ server.add_app_metadata(
 available_collections: List[str] = ["Create a new collection"]
 
 # Load all available collections from chromaDB
-existing_collections = [collection.split('_')[0] for collection in DBclient.list_collections()]
+existing_collections = [collection.name.split('_')[0] for collection in DBclient.list_collections()]
 available_collections.extend(existing_collections)
 
 # Read default similarity threshold from config file
@@ -386,7 +386,8 @@ def list_collections_endpoint(
         responseValue = ['Failed to List Collections']
         log_info(responseValue)        
 
-    return ResponseBody(root=BatchTextResponse(texts=[TextResponse(value=collection) for collection in responseValue]))
+    collection_names = [collection.name for collection in responseValue]
+    return ResponseBody(root=BatchTextResponse(texts=[TextResponse(value=collection) for collection in collection_names]))
 
 
 

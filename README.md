@@ -66,7 +66,6 @@ conda install the following:
 ```
 conda install -c conda-forge pandas
 conda install -c conda-forge opencv
-conda install -c conda-forge scikit-learn
 conda install -c conda-forge onnxruntime
 conda install matplotlib
 ```
