@@ -7,7 +7,7 @@ from scipy.spatial.distance import cosine
 # Setup paths
 script_dir = os.path.dirname(os.path.abspath(__file__))
 models_dir = os.path.join(script_dir, "src/facematch/models")
-model_path = os.path.join(models_dir, "arcface_model_new.onnx")
+model_path = os.path.join(models_dir, "arcface_model.onnx")
 
 # Test image
 img_path = "visualization/single.jpg_step4_final_face0.jpg"
