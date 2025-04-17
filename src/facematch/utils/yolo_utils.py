@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 
-from src.facematch.utils.get_embeddings import get_embedding
+from src.facematch.utils.get_batch_embeddings import get_embedding
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, 
@@ -433,6 +433,9 @@ def prepare_for_embedding(face, model_name, normalization):
 def process_yolo_detections(img, boxes, scores, landmarks, align=True, target_size=None, normalization=True, visualize=False, image_path=None, model_name="ArcFace", model_onnx_path=None, path_str=None,face_confidence_threshold=0.02,detector_backend="yolov8"):
     """ Process YOLO face detections and generate embeddings."""
     face_embeddings = []
+    detections = []
+    path_strs = []
+    regions = []
     
     if len(boxes) == 0:
         return face_embeddings
@@ -482,23 +485,27 @@ def process_yolo_detections(img, boxes, scores, landmarks, align=True, target_si
             face_path = os.path.join(debug_dir, f"{os.path.basename(image_path)}_face_{i}.jpg")
             if isinstance(detection, np.ndarray):
                 cv2.imwrite(face_path, cv2.cvtColor(detection, cv2.COLOR_RGB2BGR))
+
+        detections.append(detection)
+        path_strs.append(path_str)
+        regions.append(region)
         
-        # Generate embedding
-        try:
+    # Generate embedding
+    try:
             
-            embedding  = get_embedding(detection, model_name)
-                                
-            if embedding is not None:
+        embeddings  = get_embedding(detections, model_name, "base")
 
-                face_embeddings.append({
-                    "image_path": path_str,
-                    "embedding": embedding,
-                    "bbox": [region["x"], region["y"], region["w"], region["h"]],
-                    "confidence": region["confidence"]
-                })
+    except Exception as e:
+        logger.error(f"Error getting embedding for face {i}: {str(e)}")
 
-        except Exception as e:
-            logger.error(f"Error getting embedding for face {i}: {str(e)}")
-            continue
+    for i in range(len(embeddings)):
+        if embeddings[i] is not None:
+
+            face_embeddings.append({
+                "image_path": path_str,
+                "embedding": embeddings[i],
+                "bbox": [regions[i]["x"], regions[i]["y"], regions[i]["w"], regions[i]["h"]],
+                "confidence": regions[i]["confidence"]
+            })
     
     return face_embeddings

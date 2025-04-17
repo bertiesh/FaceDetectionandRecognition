@@ -47,7 +47,7 @@ jobs:
 
       - name: Install ONNX Models from Google Drive
         run: |
-          gdown "1lmhJYiJJq9n_UzzMBT6AXjc6dG2XdvQx" --fuzzy -O src/facematch/models/arcface_model_new.onnx --continue
+          gdown "1lmhJYiJJq9n_UzzMBT6AXjc6dG2XdvQx" --fuzzy -O src/facematch/models/arcface_model.onnx --continue
           gdown "1dHQe81U5hhxJGKBeqzy3QUtp7NNs0H4R" --fuzzy -O src/facematch/models/retinaface_resnet50.onnx --continue
           gdown "1oDt1i80rUew0UhtY3UiW9EIyd2WfJTZf" --fuzzy -O src/facematch/models/retinaface-resnet50.onnx --continue
           gdown "1A7syAtoqUuwtpxBeRiYtRhr0d3H81weR" --fuzzy -O src/facematch/models/yolov8-face-detection.onnx --continue

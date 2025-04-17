@@ -36,7 +36,7 @@ def detect_faces_and_get_embeddings(
         detector_onnx_path = os.path.join(models_dir, "retinaface-resnet50.onnx")
 
     if model_name == "ArcFace":
-        model_onnx_path = os.path.join(models_dir, "arcface_model_new.onnx")
+        model_onnx_path = os.path.join(models_dir, "arcface_model.onnx")
     elif model_name == "Facenet512":
         model_onnx_path = os.path.join(models_dir, "facenet512_model.onnx")
         

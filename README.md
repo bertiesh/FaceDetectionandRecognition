@@ -53,7 +53,7 @@ In the case that your visual studio build tools are out of date (error in one of
 
 Link to folder containing ONNX models: https://drive.google.com/drive/folders/1V3H4mcsy44VJNqop9Q2UKm7j0RkT7yba 
 
-To get started, download `arcface_model_new.onnx`, and `yolov8-face-detection.onnx` from the google drive above and put them in a folder called `models` at `<PATH TO PROJECT>/src/facematch/models`
+To get started, download `arcface_model.onnx`, `facenet512_model.onnx`, `retinaface-resnet50.onnx`, and `yolov8-face-detection.onnx` from the google drive above and put them in a folder called `models` at `<PATH TO PROJECT>/src/facematch/models`
 
 ---
 # Usage
