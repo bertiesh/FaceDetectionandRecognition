@@ -2,6 +2,9 @@ import json
 import os
 import chromadb
 from typing import List, TypedDict
+from PIL import Image
+import tempfile
+import csv
 
 from flask_ml.flask_ml_server import MLServer, load_file_as_string
 from flask_ml.flask_ml_server.models import (TextInput, BatchTextResponse,
@@ -98,6 +101,17 @@ class FindFaceParameters(TypedDict):
     collection_name: str
     similarity_threshold: float
 
+def make_composite(a, b, out_path):
+    im1, im2 = Image.open(a), Image.open(b)
+    # resize them to the same height
+    h = max(im1.height, im2.height)
+    im1 = im1.resize((int(im1.width * h / im1.height), h))
+    im2 = im2.resize((int(im2.width * h / im2.height), h))
+    out = Image.new("RGB", (im1.width + im2.width, h))
+    out.paste(im1, (0, 0))
+    out.paste(im2, (im1.width, 0))
+    out.save(out_path)
+    return out_path
 
 # Endpoint that is used to find matches to a query image
 @server.route(
@@ -129,11 +143,34 @@ def find_face_endpoint(
     if not status:
         return ResponseBody(root=TextResponse(value=results))
 
-    image_results = [
-        FileResponse(file_type="img", path=res, title=res) for res in results
-    ]
+    # image_results = [
+    #     FileResponse(file_type="img", path=res, title=res) for res in results
+    # ]
 
-    return ResponseBody(root=BatchFileResponse(files=image_results))
+    # return ResponseBody(root=BatchFileResponse(files=image_results))
+    # strip off extension to get “person name”
+    query_path = input_file_paths[0]
+    query_name = os.path.splitext(os.path.basename(query_path))[0].rsplit('_', 1)[0]
+    # path to the *match*
+    match_path = results[0]
+    match_name = os.path.splitext(os.path.basename(match_path))[0].rsplit('_', 1)[0]
+    # path to the composite image
+    if match_name == query_name:
+        comp_path = f"/tmp/{query_name}_pair.jpg"
+    else:
+        comp_path = f"/tmp/wrong_match_{match_name}.jpg"
+    # create the composite image
+    make_composite(query_path, match_path, comp_path)
+
+    file_resp = FileResponse(
+        file_type="img",
+        path=comp_path,
+        title=query_name + " vs " + match_name
+    )
+
+    return ResponseBody(root=BatchFileResponse(files=[file_resp]))
+
+
 
 
 # Frontend Task Schema defining inputs and paraneters that users can enter
@@ -203,7 +240,83 @@ def find_face_bulk_endpoint(
     )
     log_info(status)
 
-    return ResponseBody(root=TextResponse(value=str(results)))
+#     return ResponseBody(root=TextResponse(value=str(results)))
+    log_info(results)
+
+    if not status or not results:
+        return ResponseBody(root=TextResponse(value="No matches found or error occurred."))
+
+    files = []
+    query_dir = inputs["query_directory"].path
+
+
+    # compute stats
+    total = len(results)
+    matched = sum(1 for m in results.values() if m)
+
+    # write a tiny markdown “header”
+    md_fd, md_path = tempfile.mkstemp(suffix=".md")
+    with os.fdopen(md_fd, "w") as md:
+        md.write(f"**Matched {matched}/{total} faces**\n")
+    files.append(
+        FileResponse(
+            file_type="markdown",   # <-- front-end will render this as markdown
+            path=md_path,
+            title="stats.md"
+        )
+    )
+    # create composite images for each query
+    # and add them to the response
+    # for each query image, create a composite image with the first match
+    for query_image, matches in results.items():
+        if not matches:
+            continue
+
+        # strip off extension to get “person name”
+        query_name = os.path.splitext(query_image)[0].rsplit('_', 1)[0]
+        # path to the *query*
+        query_path = os.path.join(query_dir, query_image)
+        # path to the *match*
+        match_path = matches[0]
+        match_name = os.path.splitext(os.path.basename(match_path))[0].rsplit('_', 1)[0]
+        # path to the composite image
+        if match_name == query_name:
+            comp_path = f"/tmp/{query_name}_pair.jpg"
+        else:
+            comp_path = f"/tmp/wrong_match_{match_name}.jpg"
+        # create the composite image
+        make_composite(query_path, match_path, comp_path)
+
+        files.append(
+            FileResponse(
+                file_type="img",
+                path=comp_path,
+                title=query_name + " vs " + match_name
+            )
+        )
+    
+    # generate CSV report
+    fd, csv_path = tempfile.mkstemp(suffix=".csv")
+    with os.fdopen(fd, "w", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["filename", "result"])
+        for query_image, matches in results.items():
+            # collect _all_ matched basenames
+            match_fns = [os.path.basename(m) for m in matches] if matches else []
+            # join them with commas
+            writer.writerow([query_image, ",".join(match_fns)])
+
+    # append CSV as a downloadable "file" entry
+    files.append(
+        FileResponse(
+            file_type="csv",           # generic file download
+            path=csv_path,
+            title="results.csv"
+        )
+    )
+
+    return ResponseBody(root=BatchFileResponse(files=files))
+
 
 # Inputs and parameters for the findfacebulk endpoint
 class FindFaceBulkTestingInputs(TypedDict):
