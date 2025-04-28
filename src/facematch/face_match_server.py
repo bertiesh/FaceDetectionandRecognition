@@ -240,7 +240,7 @@ def find_face_bulk_endpoint(
     )
     log_info(status)
 
-#     return ResponseBody(root=TextResponse(value=str(results)))
+    # return ResponseBody(root=TextResponse(value=str(results)))
     log_info(results)
 
     if not status or not results:
@@ -295,6 +295,57 @@ def find_face_bulk_endpoint(
             )
         )
     
+    # 1) start the table
+    lines = [
+        "| Name | Query | Matches | Match Names |",
+        "|:----:|:-----:|:-------:|:-----------:|",
+    ]
+
+    for query_image, matches in results.items():
+        # skip “no matches” if you like
+        if not matches:
+            continue
+
+        # a) Query person name
+        name = os.path.splitext(query_image)[0].rsplit("_", 1)[0]
+
+        # b) Query image cell
+        qpath = os.path.join(query_dir, query_image)
+        qcell = f"![]({qpath})"
+
+        # c) All matched images (or just the first)
+        #    — use all:
+        mpaths = matches
+        #    — or only first match:
+        # mpaths = matches[:1]
+        mcells = " ".join(f"![]({mp})" for mp in mpaths) if mpaths else ""
+
+        # d) All match names (or only first)
+        mnames = [
+            os.path.splitext(os.path.basename(mp))[0].rsplit("_", 1)[0]
+            for mp in mpaths
+        ]
+        # or only first:
+        # mnames = mnames[:1]
+        mname_cell = ", ".join(mnames)
+
+        # 2) add a row
+        lines.append(f"| {name} | {qcell} | {mcells} | {mname_cell} |")
+
+    # 3) write out to a temp .md and return it
+    fd, md_path = tempfile.mkstemp(suffix=".md")
+    with os.fdopen(fd, "w") as md:
+        md.write("\n".join(lines))
+
+    # append markdown as a downloadable "file" entry
+    files.append(
+        FileResponse(
+            file_type="markdown",           # generic file download
+            path=md_path,
+            title="results.md"
+        )
+    )
+
     # generate CSV report
     fd, csv_path = tempfile.mkstemp(suffix=".csv")
     with os.fdopen(fd, "w", newline="") as csvfile:
