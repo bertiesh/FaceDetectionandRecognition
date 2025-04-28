@@ -32,10 +32,24 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+def extract_identity_from_filename(filename):
+    """Extract person name without numeric suffix."""
+    filename = os.path.basename(filename.strip())
+    match = re.match(r"(.+)_\d+\.jpg", filename)
+    return match.group(1) if match else None
+
+# --- Build a set of all identities in the database ---
+db_images_path = os.getenv("DATABASE_DIRECTORY")
+db_identities = set()
+
+for f in os.listdir(db_images_path):
+    identity = extract_identity_from_filename(f)
+    if identity:
+        db_identities.add(identity)
 
 # Extract ground truth names (base names without numeric suffixes)
 def extract_ground_truth(x):
-    match = re.match(r"(.+?)_\d+\.jpg", x)
+    match = re.match(r"(.+)_\d+\.jpg", x)
     return match.group(1) if match else None
 
 # Add a column to check if the prediction is correct based on whether the predicted names match the ground truth
@@ -60,6 +74,7 @@ def is_correct_match(row, top_n=5):
         for path in paths:
             base_filename = os.path.basename(path.strip())
             match = re.match(r"(.+?)_\d+\.jpg", base_filename)
+
             if match:
                 predicted_person_names.append(match.group(1))
                 
@@ -144,13 +159,12 @@ for top_n, n in zip(top_n, N):
 
         data = pd.read_csv(os.path.join(output_directory, filename))
     
-        # Determine the midpoint of the DataFrame
-        midpoint = len(data) // 2
+        # Set `ground_truth` based on filename
+        data["ground_truth"] = data["filename"].apply(extract_identity_from_filename)
 
-        # Set `true_label` column
-        data["true_label"] = true_label_column
+        # Determine if the identity is in the database
+        data["true_label"] = data["ground_truth"].apply(lambda x: x in db_identities)
 
-        data["ground_truth"] = data["filename"].apply(extract_ground_truth)
 
         # Apply the function to each row to create a 'predicted' column with boolean values
         
